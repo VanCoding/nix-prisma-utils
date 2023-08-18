@@ -29,7 +29,7 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
 
     outputs = {pkgs,prisma-utils,...}: let
         nixpkgs = import pkgs {system = "x86_64-linux"};
-        prisma = (prisma-utils.lib.prisma {
+        prisma = (prisma-utils.lib.prisma-factory {
             inherit nixpkgs;
             prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; # just copy these hashes for now, and then change them when nix complains about the mismatch
             query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
@@ -54,7 +54,7 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
 
     outputs = {pkgs,prisma-utils,...}: let
         nixpkgs = import pkgs {system = "x86_64-linux"};
-        prisma = (prisma-utils.lib.prisma {
+        prisma = (prisma-utils.lib.prisma-factory {
             inherit nixpkgs;
             prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";  # just copy these hashes for now, and then change them when nix complains about the mismatch
             query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
