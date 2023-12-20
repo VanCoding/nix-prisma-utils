@@ -60,7 +60,8 @@
         };
     fromPnpmLock = path: let
         pnpmLock = builtins.readFile path;
-        version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split "@prisma/engines-version@" pnpmLock) 2)) 0;
+        splitCharacter = if nixpkgs.lib.strings.hasPrefix "lockfileVersion: 5" pnpmLock then "/" else "@";
+        version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version"+splitCharacter) pnpmLock) 2)) 0;
         commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
         in fromCommit commit;
     fromNpmLock = path: let
