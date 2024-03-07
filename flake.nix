@@ -32,6 +32,7 @@
               nixpkgs.nodePackages.pnpm
               nixpkgs.stdenv.cc.cc.lib
               prisma.package
+              nixpkgs.nixfmt-rfc-style
             ];
             shellHook = prisma.shellHook;
           };
