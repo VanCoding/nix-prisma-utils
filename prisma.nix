@@ -8,6 +8,12 @@
   query-engine-hash,
   libquery-engine-hash,
   schema-engine-hash ? null,
+  binaryTargetBySystem ? {
+    x86_64-linux = "debian";
+    aarch64-linux = "linux-arm64";
+    x86_64-darwin = "darwin";
+    aarch64-darwin = "darwin-arm64";
+  },
 }:
 rec {
   fromCommit =
@@ -15,7 +21,8 @@ rec {
     let
       hostname = "binaries.prisma.sh";
       channel = "all_commits";
-      target = "debian-openssl-${opensslVersion}";
+      binaryTarget = binaryTargetBySystem.${nixpkgs.system};
+      target = "${binaryTarget}-openssl-${opensslVersion}";
       baseUrl = "https://${hostname}/${channel}";
       files =
         [
