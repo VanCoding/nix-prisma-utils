@@ -1,7 +1,7 @@
 {
   nixpkgs,
-  openssl3 ? true,
-  openssl ? nixpkgs.openssl,
+  opensslVersion ? "3.0.x", # can be 3.0.x, 1.1.x or 1.0.x
+  openssl ? nixpkgs.openssl, # the openssl package to use
   introspection-engine-hash ? null,
   migration-engine-hash ? null,
   prisma-fmt-hash,
@@ -15,7 +15,7 @@ rec {
     let
       hostname = "binaries.prisma.sh";
       channel = "all_commits";
-      target = "debian-openssl-${if openssl3 then "3.0.x" else "1.1.x"}";
+      target = "debian-openssl-${opensslVersion}";
       baseUrl = "https://${hostname}/${channel}";
       files =
         [
