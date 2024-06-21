@@ -29,7 +29,7 @@
           nixpkgs.mkShell {
             buildInputs = [
               nixpkgs.nodejs-18_x
-              nixpkgs.nodePackages.pnpm
+              nixpkgs.pnpm
               nixpkgs.stdenv.cc.cc.lib
               prisma.package
               nixpkgs.nixfmt-rfc-style

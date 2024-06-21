@@ -125,12 +125,39 @@ rec {
   fromPnpmLock =
     path:
     let
+      textAfter = keyword: text: builtins.elemAt (builtins.split keyword text) 1;
+      textBefore = keyword: text: builtins.elemAt (builtins.split keyword text) 0;
+      parsePnpmLockVersion =
+        pnpmLock:
+        if nixpkgs.lib.strings.hasPrefix "lockfileVersion: 5" pnpmLock then
+          "5"
+        else if nixpkgs.lib.strings.hasPrefix "lockfileVersion: '6" pnpmLock then
+          "6"
+        else
+          "9";
+      pnpmLockParsers = {
+        # example line:
+        # /@prisma/engines-version/5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e:
+        "5" =
+          pnpmLock:
+          builtins.elemAt (builtins.match ".*@prisma/engines-version/.*\\.([0-9a-f]{40}):.*" pnpmLock) 0;
+
+        # example line:
+        # /@prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e:
+        "6" =
+          pnpmLock:
+          builtins.elemAt (builtins.match ".*@prisma/engines-version@.*\\.([0-9a-f]{40}):.*" pnpmLock) 0;
+
+        # exmple line:
+        # '@prisma/engines-version@5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022':
+        "9" =
+          pnpmLock:
+          builtins.elemAt (builtins.match ".*@prisma/engines-version@.*\\.([0-9a-f]{40})'.*" pnpmLock) 0;
+      };
       pnpmLock = builtins.readFile path;
-      splitCharacter = if nixpkgs.lib.strings.hasPrefix "lockfileVersion: 5" pnpmLock then "/" else "@";
-      version = builtins.elemAt (builtins.split ":" (
-        builtins.elemAt (builtins.split ("@prisma/engines-version" + splitCharacter) pnpmLock) 2
-      )) 0;
-      commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
+      pnpmLockVersion = parsePnpmLockVersion pnpmLock;
+      pnpmLockParser = pnpmLockParsers.${pnpmLockVersion};
+      commit = pnpmLockParser pnpmLock;
     in
     fromCommit commit;
   fromNpmLock =
@@ -144,5 +171,5 @@ rec {
           packageLock.packages.${"node_modules/@prisma/engines-version"}.version;
       commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
     in
-    builtins.trace commit (fromCommit commit);
+    fromCommit commit;
 }
