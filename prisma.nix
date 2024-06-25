@@ -140,19 +140,34 @@ rec {
         # /@prisma/engines-version/5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e:
         "5" =
           pnpmLock:
-          builtins.elemAt (builtins.match ".*@prisma/engines-version/.*\\.([0-9a-f]{40}):.*" pnpmLock) 0;
+          let
+            version = builtins.elemAt (builtins.split ":" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2
+            )) 0;
+          in
+          nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
         # example line:
         # /@prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e:
         "6" =
           pnpmLock:
-          builtins.elemAt (builtins.match ".*@prisma/engines-version@.*\\.([0-9a-f]{40}):.*" pnpmLock) 0;
+          let
+            version = builtins.elemAt (builtins.split ":" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
+            )) 0;
+          in
+          nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
         # exmple line:
         # '@prisma/engines-version@5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022':
         "9" =
           pnpmLock:
-          builtins.elemAt (builtins.match ".*@prisma/engines-version@.*\\.([0-9a-f]{40})'.*" pnpmLock) 0;
+          let
+            version = builtins.elemAt (builtins.split "'" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
+            )) 0;
+          in
+          nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
       };
       pnpmLock = builtins.readFile path;
       pnpmLockVersion = parsePnpmLockVersion pnpmLock;
