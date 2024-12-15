@@ -27,7 +27,7 @@ let
         echo "testing npm"
         ${prisma.shellHook}
         cd npm
-        npm ci
+        ${nixpkgs.nodejs}/bin/npm ci
         ./node_modules/.bin/prisma generate
       '';
     };
@@ -43,7 +43,7 @@ let
         echo "testing pnpm"
         ${prisma.shellHook}
         cd pnpm
-        pnpm install
+        ${nixpkgs.pnpm}/bin/pnpm install
         ./node_modules/.bin/prisma generate
       '';
     };
