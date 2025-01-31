@@ -1,0 +1,10 @@
+{
+  "name": "bun",
+  "type": "module",
+  "dependencies": {
+    "@prisma/client": "5.1.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.3.0"
+  }
+}
