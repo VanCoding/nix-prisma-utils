@@ -42,7 +42,11 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
           ./package-lock.json; # <--- path to our package-lock.json file that contains the version of prisma-engines
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell { shellHook = prisma.shellHook; };
+      devShells.x86_64-linux.default = nixpkgs.mkShell {
+        shellHook = prisma.shellHook;
+        # you can also use `env` instead of shellHook.
+        # env = prisma.env;
+      };
     };
 }
 
@@ -70,7 +74,11 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
           ./pnpm-lock.yaml; # <--- path to our pnpm-lock.yaml file that contains the version of prisma-engines
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell { shellHook = prisma.shellHook; };
+      devShells.x86_64-linux.default = nixpkgs.mkShell {
+        shellHook = prisma.shellHook;
+        # you can also use `env` instead of shellHook.
+        # env = prisma.env;
+      };
     };
 }
 
