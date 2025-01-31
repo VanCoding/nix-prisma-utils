@@ -21,7 +21,9 @@ rec {
     let
       # polyfill: the function in nixpkgs is implemented on Dec 6, 2024. replace this with one from pkgs.lib after 24.11 reaches EOL.
       concatMapAttrsStringSep =
-        let inherit (nixpkgs) lib; in
+        let
+          inherit (nixpkgs) lib;
+        in
         sep: f: attrs:
         lib.concatStringsSep sep (lib.attrValues (lib.mapAttrs f attrs));
 
@@ -104,7 +106,8 @@ rec {
       ) files;
       unzipCommands = builtins.map (file: "gunzip -c ${file.file} > $out/${file.path}") downloadedFiles;
 
-      mkEnv = package:
+      mkEnv =
+        package:
         builtins.listToAttrs (
           builtins.map (file: {
             name = file.variable;
@@ -127,10 +130,8 @@ rec {
         # Type
         toExportStyle :: Attrset<String> -> String
       */
-      toExportStyle = attrset:
-        concatMapAttrsStringSep "\n"
-        (name: value: "export ${name}=${value}")
-        attrset;
+      toExportStyle =
+        attrset: concatMapAttrsStringSep "\n" (name: value: "export ${name}=${value}") attrset;
     in
     rec {
       package = nixpkgs.stdenv.mkDerivation {
