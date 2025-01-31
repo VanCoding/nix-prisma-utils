@@ -85,5 +85,10 @@ let
   };
 in
 {
-  inherit test-npm test-pnpm test-bun test-all;
+  inherit
+    test-npm
+    test-pnpm
+    test-bun
+    test-all
+    ;
 }

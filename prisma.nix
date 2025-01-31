@@ -23,10 +23,7 @@ rec {
       channel = "all_commits";
       binaryTarget = binaryTargetBySystem.${nixpkgs.system};
       isDarwin = nixpkgs.lib.strings.hasPrefix "darwin" binaryTarget;
-      target = if isDarwin then
-        binaryTarget
-      else
-        "${binaryTarget}-openssl-${opensslVersion}";
+      target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
       baseUrl = "https://${hostname}/${channel}";
       files =
         [
@@ -43,10 +40,7 @@ rec {
             variable = "PRISMA_QUERY_ENGINE_BINARY";
           }
           {
-            name = if isDarwin then
-              "libquery_engine.dylib.node"
-              else
-              "libquery_engine.so.node";
+            name = if isDarwin then "libquery_engine.dylib.node" else "libquery_engine.so.node";
             hash = libquery-engine-hash;
             path = "lib/libquery_engine.node";
             variable = "PRISMA_QUERY_ENGINE_LIBRARY";
@@ -110,13 +104,15 @@ rec {
       package = nixpkgs.stdenv.mkDerivation {
         pname = "prisma-bin";
         version = commit;
-        nativeBuildInputs = [
-          nixpkgs.zlib
-          openssl
-          nixpkgs.stdenv.cc.cc.lib
-        ] ++ nixpkgs.lib.optionals (!isDarwin) [
-          nixpkgs.autoPatchelfHook
-        ];
+        nativeBuildInputs =
+          [
+            nixpkgs.zlib
+            openssl
+            nixpkgs.stdenv.cc.cc.lib
+          ]
+          ++ nixpkgs.lib.optionals (!isDarwin) [
+            nixpkgs.autoPatchelfHook
+          ];
         phases = [
           "buildPhase"
           "postFixupHooks"
@@ -153,9 +149,7 @@ rec {
         "5" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -164,9 +158,7 @@ rec {
         "6" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -175,9 +167,7 @@ rec {
         "9" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split "'" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
       };
@@ -199,7 +189,8 @@ rec {
       commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
     in
     fromCommit commit;
-  fromBunLock = path:
+  fromBunLock =
+    path:
     let
       # HACK: nix doesn't support JSONC parsing, so currently doing
       # 1. remove whitespace and newline
@@ -208,25 +199,35 @@ rec {
       # to support JSON with trailing comma.
       # Keep in mind that this removes all whitespaces / tab / newline in the key / value
       # and doesn't support comments.
-      fromJSONWithTrailingComma = jsonc:
-        builtins.fromJSON (builtins.replaceStrings [",}" ",]"] ["}" "]"] (builtins.replaceStrings [" " "\t" "\n"] ["" "" ""] jsonc));
+      fromJSONWithTrailingComma =
+        jsonc:
+        builtins.fromJSON (
+          builtins.replaceStrings [ ",}" ",]" ] [ "}" "]" ] (
+            builtins.replaceStrings [ " " "\t" "\n" ] [ "" "" "" ] jsonc
+          )
+        );
       bunLockParsers = {
         # example:
         # nu> open bun.lock | from json | get packages.@prisma/engines-version.0
         # @prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e
         "0" = bunLockParsers."1";
-        "1" = lock: afterLastDot (builtins.elemAt (
-          lock."packages"."@prisma/engines-version"
-          or (throw ''
-                nix-prisma-utils: lockfile parsing error: package @prisma/engines-version not found.
-                please make sure that you have @prisma/client installed.
-              '')
-          ) 0);
+        "1" =
+          lock:
+          afterLastDot (
+            builtins.elemAt (lock."packages"."@prisma/engines-version" or (throw ''
+              nix-prisma-utils: lockfile parsing error: package @prisma/engines-version not found.
+              please make sure that you have @prisma/client installed.
+            '')
+            ) 0
+          );
       };
-      lockfile = fromJSONWithTrailingComma (assert builtins.typeOf path == "path"; builtins.readFile path);
+      lockfile = fromJSONWithTrailingComma (
+        assert builtins.typeOf path == "path";
+        builtins.readFile path
+      );
       lockfileVersion = builtins.toString lockfile."lockfileVersion";
-      parse = bunLockParsers.${lockfileVersion} or
-        (throw ''
+      parse =
+        bunLockParsers.${lockfileVersion} or (throw ''
           nix-prisma-utils: Unsupported lockfile version: ${lockfileVersion}
           nix-prisma-utils currently supports bun.lock version of 0 and 1.
         '');
