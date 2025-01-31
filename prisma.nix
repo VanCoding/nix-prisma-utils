@@ -19,6 +19,12 @@ rec {
   fromCommit =
     commit:
     let
+      # polyfill: the function in nixpkgs is implemented on Dec 6, 2024. replace this with one from pkgs.lib after 24.11 reaches EOL.
+      concatMapAttrsStringSep =
+        let inherit (nixpkgs) lib; in
+        sep: f: attrs:
+        lib.concatStringsSep sep (lib.attrValues (lib.mapAttrs f attrs));
+
       hostname = "binaries.prisma.sh";
       channel = "all_commits";
       binaryTarget = binaryTargetBySystem.${nixpkgs.system};
@@ -97,8 +103,34 @@ rec {
         }
       ) files;
       unzipCommands = builtins.map (file: "gunzip -c ${file.file} > $out/${file.path}") downloadedFiles;
-      exportCommands =
-        package: builtins.map (file: "export ${file.variable}=${package}/${file.path}") files;
+
+      mkEnv = package:
+        builtins.listToAttrs (
+          builtins.map (file: {
+            name = file.variable;
+            value = "${package}/${file.path}";
+          }) files
+        );
+      /**
+        This function converts attrset to bash export style.
+        may or may not contain leading or trailing \n. do not assume their existence.
+
+        # Example
+        ```nix
+        toExportStyle { foo = "bar"; baz = "abc"; }
+        =>
+        ''
+          export foo=bar
+          export baz=abc
+        ''
+
+        # Type
+        toExportStyle :: Attrset<String> -> String
+      */
+      toExportStyle = attrset:
+        concatMapAttrsStringSep "\n"
+        (name: value: "export ${name}=${value}")
+        attrset;
     in
     rec {
       package = nixpkgs.stdenv.mkDerivation {
@@ -120,7 +152,8 @@ rec {
           chmod +x $out/bin/*
         '';
       };
-      shellHook = nixpkgs.lib.concatStringsSep "\n" (exportCommands package);
+      env = mkEnv package;
+      shellHook = toExportStyle env;
     };
   # example:
   # a.b123c.d.e12345
