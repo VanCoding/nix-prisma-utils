@@ -130,6 +130,10 @@ rec {
       };
       shellHook = nixpkgs.lib.concatStringsSep "\n" (exportCommands package);
     };
+  # example:
+  # a.b123c.d.e12345
+  # => e12345
+  afterLastDot = text: nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." text);
   fromPnpmLock =
     path:
     let
@@ -193,6 +197,40 @@ rec {
         else
           packageLock.packages.${"node_modules/@prisma/engines-version"}.version;
       commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
+    in
+    fromCommit commit;
+  fromBunLock = path:
+    let
+      # HACK: nix doesn't support JSONC parsing, so currently doing
+      # 1. remove whitespace and newline
+      # 2. replace ",}" with "}"
+      # 3. replace ",]" with "]"
+      # to support JSON with trailing comma.
+      # Keep in mind that this removes all whitespaces / tab / newline in the key / value
+      # and doesn't support comments.
+      fromJSONWithTrailingComma = jsonc:
+        builtins.fromJSON (builtins.replaceStrings [",}" ",]"] ["}" "]"] (builtins.replaceStrings [" " "\t" "\n"] ["" "" ""] jsonc));
+      bunLockParsers = {
+        # example:
+        # nu> open bun.lock | from json | get packages.@prisma/engines-version.0
+        # @prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e
+        "0" = bunLockParsers."1";
+        "1" = lock: afterLastDot (builtins.elemAt (
+          lock."packages"."@prisma/engines-version"
+          or (throw ''
+                nix-prisma-utils: lockfile parsing error: package @prisma/engines-version not found.
+                please make sure that you have @prisma/client installed.
+              '')
+          ) 0);
+      };
+      lockfile = fromJSONWithTrailingComma (assert builtins.typeOf path == "path"; builtins.readFile path);
+      lockfileVersion = builtins.toString lockfile."lockfileVersion";
+      parse = bunLockParsers.${lockfileVersion} or
+        (throw ''
+          nix-prisma-utils: Unsupported lockfile version: ${lockfileVersion}
+          nix-prisma-utils currently supports bun.lock version of 0 and 1.
+        '');
+      commit = parse lockfile;
     in
     fromCommit commit;
 }

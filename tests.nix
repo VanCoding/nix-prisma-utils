@@ -53,18 +53,37 @@ let
         ./node_modules/.bin/prisma generate
       '';
     };
+  test-bun =
+    let
+      prisma =
+        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromBunLock
+          ./bun/bun.lock;
+    in
+    writeShellApplication {
+      name = "test-bun";
+      runtimeInputs = [ nixpkgs.bun ];
+      text = ''
+        echo "testing bun"
+        ${prisma.shellHook}
+        cd bun
+        bun install
+        bunx prisma generate
+      '';
+    };
   test-all = writeShellApplication {
     name = "test";
     runtimeInputs = [
-      test-pnpm
       test-npm
+      test-pnpm
+      test-bun
     ];
     text = ''
       test-npm
       test-pnpm
+      test-bun
     '';
   };
 in
 {
-  inherit test-npm test-pnpm test-all;
+  inherit test-npm test-pnpm test-bun test-all;
 }
