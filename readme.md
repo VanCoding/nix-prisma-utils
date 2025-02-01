@@ -43,9 +43,9 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
     in
     {
       devShells.x86_64-linux.default = nixpkgs.mkShell {
-        shellHook = prisma.shellHook;
-        # you can also use `env` instead of shellHook.
-        # env = prisma.env;
+        env = prisma.env;
+        # or, you can use `shellHook` instead of `env` to load the same environment variables.
+        # shellHook = prisma.shellHook;
       };
     };
 }
@@ -75,9 +75,9 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
     in
     {
       devShells.x86_64-linux.default = nixpkgs.mkShell {
-        shellHook = prisma.shellHook;
-        # you can also use `env` instead of shellHook.
-        # env = prisma.env;
+        env = prisma.env;
+        # or, you can use `shellHook` instead of `env` to load the same environment variables.
+        # shellHook = prisma.shellHook;
       };
     };
 }
@@ -108,9 +108,9 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
     in
     {
       devShells.x86_64-linux.default = nixpkgs.mkShell {
-        shellHook = prisma.shellHook;
-        # you can also use `env` instead of shellHook.
-        # env = prisma.env;
+        env = prisma.env;
+        # or, you can use `shellHook` instead of `env` to load the same environment variables.
+        # shellHook = prisma.shellHook;
       };
     };
 }
