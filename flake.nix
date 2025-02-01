@@ -30,6 +30,7 @@
             buildInputs = [
               nixpkgs.nodejs-18_x
               nixpkgs.pnpm
+              nixpkgs.bun
               nixpkgs.stdenv.cc.cc.lib
               prisma.package
               nixpkgs.nixfmt-rfc-style
