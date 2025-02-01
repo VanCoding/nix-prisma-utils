@@ -116,15 +116,15 @@ rec {
         );
       /**
         This function converts attrset to bash export style.
-        may or may not contain leading or trailing \n. do not assume their existence.
+        return value contains leading and trailing newlines.
 
         # Example
         ```nix
         toExportStyle { foo = "bar"; baz = "abc"; }
         =>
         ''
-          export foo=bar
-          export baz=abc
+          export foo="bar"
+          export baz="abc"
         ''
         ```
 
@@ -132,7 +132,7 @@ rec {
         toExportStyle :: Attrset<String> -> String
       */
       toExportStyle =
-        attrset: concatMapAttrsStringSep "\n" (name: value: "export ${name}=${value}") attrset;
+        attrset: "\n" + (concatMapAttrsStringSep "\n" (name: value: "export ${name}=\"${value}\"") attrset) + "\n";
     in
     rec {
       package = nixpkgs.stdenv.mkDerivation {
