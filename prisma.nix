@@ -126,6 +126,7 @@ rec {
           export foo=bar
           export baz=abc
         ''
+        ```
 
         # Type
         toExportStyle :: Attrset<String> -> String
