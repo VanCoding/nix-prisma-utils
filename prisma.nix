@@ -104,15 +104,11 @@ rec {
       package = nixpkgs.stdenv.mkDerivation {
         pname = "prisma-bin";
         version = commit;
-        nativeBuildInputs =
-          [
-            nixpkgs.zlib
-            openssl
-            nixpkgs.stdenv.cc.cc.lib
-          ]
-          ++ nixpkgs.lib.optionals (!isDarwin) [
-            nixpkgs.autoPatchelfHook
-          ];
+        nativeBuildInputs = [
+          nixpkgs.zlib
+          openssl
+          nixpkgs.stdenv.cc.cc.lib
+        ] ++ nixpkgs.lib.optionals (!isDarwin) [ nixpkgs.autoPatchelfHook ];
         phases = [
           "buildPhase"
           "postFixupHooks"
@@ -149,7 +145,9 @@ rec {
         "5" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2)) 0;
+            version = builtins.elemAt (builtins.split ":" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2
+            )) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -158,7 +156,9 @@ rec {
         "6" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
+            version = builtins.elemAt (builtins.split ":" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
+            )) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -167,7 +167,9 @@ rec {
         "9" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
+            version = builtins.elemAt (builtins.split "'" (
+              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
+            )) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
       };
@@ -202,9 +204,29 @@ rec {
       fromJSONWithTrailingComma =
         jsonc:
         builtins.fromJSON (
-          builtins.replaceStrings [ ",}" ",]" ] [ "}" "]" ] (
-            builtins.replaceStrings [ " " "\t" "\n" ] [ "" "" "" ] jsonc
-          )
+          builtins.replaceStrings
+            [
+              ",}"
+              ",]"
+            ]
+            [
+              "}"
+              "]"
+            ]
+            (
+              builtins.replaceStrings
+                [
+                  " "
+                  "\t"
+                  "\n"
+                ]
+                [
+                  ""
+                  ""
+                  ""
+                ]
+                jsonc
+            )
         );
       bunLockParsers = {
         # example:
