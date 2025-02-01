@@ -107,7 +107,11 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
           # NOTE: does not work with bun.lockb!
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell { shellHook = prisma.shellHook; };
+      devShells.x86_64-linux.default = nixpkgs.mkShell {
+        shellHook = prisma.shellHook;
+        # you can also use `env` instead of shellHook.
+        # env = prisma.env;
+      };
     };
 }
 ```
