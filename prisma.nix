@@ -23,10 +23,7 @@ rec {
       channel = "all_commits";
       binaryTarget = binaryTargetBySystem.${nixpkgs.system};
       isDarwin = nixpkgs.lib.strings.hasPrefix "darwin" binaryTarget;
-      target = if isDarwin then
-        binaryTarget
-      else
-        "${binaryTarget}-openssl-${opensslVersion}";
+      target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
       baseUrl = "https://${hostname}/${channel}";
       files =
         [
@@ -43,10 +40,7 @@ rec {
             variable = "PRISMA_QUERY_ENGINE_BINARY";
           }
           {
-            name = if isDarwin then
-              "libquery_engine.dylib.node"
-              else
-              "libquery_engine.so.node";
+            name = if isDarwin then "libquery_engine.dylib.node" else "libquery_engine.so.node";
             hash = libquery-engine-hash;
             path = "lib/libquery_engine.node";
             variable = "PRISMA_QUERY_ENGINE_LIBRARY";
@@ -114,9 +108,7 @@ rec {
           nixpkgs.zlib
           openssl
           nixpkgs.stdenv.cc.cc.lib
-        ] ++ nixpkgs.lib.optionals (!isDarwin) [
-          nixpkgs.autoPatchelfHook
-        ];
+        ] ++ nixpkgs.lib.optionals (!isDarwin) [ nixpkgs.autoPatchelfHook ];
         phases = [
           "buildPhase"
           "postFixupHooks"
