@@ -24,9 +24,6 @@
         };
       in
       {
-        packages = import ./tests.nix {
-          inherit prisma-factory nixpkgs;
-        };
         formatter = treefmt.config.build.wrapper;
         checks =
           (nixpkgs.callPackages ./tests.nix {
