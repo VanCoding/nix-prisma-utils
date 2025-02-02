@@ -104,9 +104,19 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
 }
 ```
 
-## Testing
+## Contributing
 
-`nix run .#test-all`
+Before contributing, please make sure that your code is formatted correctly by running
+
+```sh
+nix fmt
+```
+
+All tests (including format check) can be run by
+
+```sh
+nix flake check
+```
 
 ## License
 
