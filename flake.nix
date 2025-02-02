@@ -18,9 +18,8 @@
       let
         nixpkgs = import pkgs { inherit system; };
         treefmt = treefmt-nix.lib.evalModule nixpkgs {
-          # Used to find the project root
-          # projectRootFile = "flake.nix";
-          programs.nixfmt-rfc-style.enable = true;
+          # nixfmt is nixfmt-rfc-style
+          programs.nixfmt.enable = true;
         };
       in
       {
