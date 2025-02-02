@@ -145,9 +145,7 @@ rec {
         "5" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -156,9 +154,7 @@ rec {
         "6" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -167,9 +163,7 @@ rec {
         "9" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split "'" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
       };
