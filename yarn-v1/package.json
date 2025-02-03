@@ -1,0 +1,9 @@
+{
+  "name": "yarn-v1",
+  "dependencies": {
+    "@prisma/client": "5.1.1"
+  },
+  "devDependencies": {
+    "prisma": "5.1.1"
+  }
+}

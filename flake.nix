@@ -10,9 +10,29 @@
       system:
       let
         nixpkgs = import pkgs { inherit system; };
+
+        yarn-v1 = nixpkgs.writeShellApplication {
+          name = "yarn-v1";
+          checkPhase = "";
+          runtimeInputs = [ nixpkgs.yarn ];
+          text = "yarn $@";
+        };
+        yarn-berry = nixpkgs.writeShellApplication {
+          name = "yarn-berry";
+          checkPhase = "";
+          runtimeInputs = [ nixpkgs.yarn-berry ];
+          text = "yarn $@";
+        };
       in
       {
-        packages = import ./tests.nix { inherit prisma-factory nixpkgs; };
+        packages = nixpkgs.callPackage ./tests.nix {
+          inherit
+            prisma-factory
+            nixpkgs
+            yarn-v1
+            yarn-berry
+            ;
+        };
         devShells.default =
           let
             prisma = (
@@ -34,6 +54,8 @@
               nixpkgs.stdenv.cc.cc.lib
               prisma.package
               nixpkgs.nixfmt-rfc-style
+              yarn-v1
+              yarn-berry
             ];
             shellHook = prisma.shellHook;
           };

@@ -48,6 +48,39 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
 
 ```
 
+### Using `yarn`
+
+both yarn v1 and yarn-berry should work.
+
+```nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+
+  outputs =
+    { nixpkgs, prisma-utils, ... }:
+    let
+      system = "x86_64-linux";
+      nixpkgs = nixpkgs.legacyPackages.${system};
+      prisma =
+        (prisma-utils.lib.prisma-factory {
+          inherit nixpkgs;
+          # just copy these hashes for now, and then change them when nix complains about the mismatch
+          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
+          query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
+          libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
+          schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
+        }).fromYarnLock
+          ./yarn.lock; # <--- path to our package-lock.json file that contains the version of prisma-engines
+    in
+    {
+      devShells.${system}.default = nixpkgs.mkShell {
+        shellHook = prisma.shellHook;
+      };
+    };
+}
+```
+
 ### Using `pnpm`
 
 ```nix

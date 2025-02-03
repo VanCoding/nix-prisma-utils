@@ -15,117 +15,145 @@
     aarch64-darwin = "darwin-arm64";
   },
 }:
+let
+  pkgs = nixpkgs; # remove this after renaming nixpkg -> pkgs
+  inherit (pkgs) lib;
+  lines = s: lib.strings.splitString "\n" s;
+
+  # example:
+  # splitMultiple ["|" "," "-"] "a-|b,c-d"
+  # -> ["a" "" "b" "c" "d"]
+  splitMultiple = delims: s: _splitMultiple delims [ s ];
+  # example:
+  # _splitMultiple ["|" "," "-"] ["a-|b,c-d"]
+  # -> ["a" "" "b" "c" "d"]
+  _splitMultiple =
+    delims: list:
+    if builtins.length delims == 0 then
+      list
+    else
+      let
+        splitStr = map (str: lib.strings.splitString (builtins.elemAt delims 0) str) list;
+      in
+      _splitMultiple (lib.drop 1 delims) (lib.lists.concatLists splitStr);
+  splitMultipleAndFilterEmpty = delims: s: builtins.filter (str: str != "") (splitMultiple delims s);
+  afterLastDot = text: nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." text);
+
+  readYAML = pkgs.callPackage ./lib/readYAML.nix { };
+in
 rec {
   fromCommit =
     commit:
-    let
-      hostname = "binaries.prisma.sh";
-      channel = "all_commits";
-      binaryTarget = binaryTargetBySystem.${nixpkgs.system};
-      isDarwin = nixpkgs.lib.strings.hasPrefix "darwin" binaryTarget;
-      target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
-      baseUrl = "https://${hostname}/${channel}";
-      files =
-        [
-          {
-            name = "prisma-fmt";
-            hash = prisma-fmt-hash;
-            path = "bin/prisma-fmt";
-            variable = "PRISMA_FMT_BINARY";
+    if builtins.stringLength commit != 40 then
+      throw "nvalid commit: got ${commit}"
+    else
+      let
+        hostname = "binaries.prisma.sh";
+        channel = "all_commits";
+        binaryTarget = binaryTargetBySystem.${nixpkgs.system};
+        isDarwin = nixpkgs.lib.strings.hasPrefix "darwin" binaryTarget;
+        target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
+        baseUrl = "https://${hostname}/${channel}";
+        files =
+          [
+            {
+              name = "prisma-fmt";
+              hash = prisma-fmt-hash;
+              path = "bin/prisma-fmt";
+              variable = "PRISMA_FMT_BINARY";
+            }
+            {
+              name = "query-engine";
+              hash = query-engine-hash;
+              path = "bin/query-engine";
+              variable = "PRISMA_QUERY_ENGINE_BINARY";
+            }
+            {
+              name = if isDarwin then "libquery_engine.dylib.node" else "libquery_engine.so.node";
+              hash = libquery-engine-hash;
+              path = "lib/libquery_engine.node";
+              variable = "PRISMA_QUERY_ENGINE_LIBRARY";
+            }
+          ]
+          ++ (
+            if introspection-engine-hash == null then
+              [ ]
+            else
+              [
+                {
+                  name = "introspection-engine";
+                  hash = introspection-engine-hash;
+                  path = "bin/introspection-engine";
+                  variable = "PRISMA_INTROSPECTION_ENGINE_BINARY";
+                }
+              ]
+          )
+          ++ (
+            if migration-engine-hash == null then
+              [ ]
+            else
+              [
+                {
+                  name = "migration-engine";
+                  hash = migration-engine-hash;
+                  path = "bin/migration-engine";
+                  variable = "PRISMA_MIGRATION_ENGINE_BINARY";
+                }
+              ]
+          )
+          ++ (
+            if schema-engine-hash == null then
+              [ ]
+            else
+              [
+                {
+                  name = "schema-engine";
+                  hash = schema-engine-hash;
+                  path = "bin/schema-engine";
+                  variable = "PRISMA_SCHEMA_ENGINE_BINARY";
+                }
+              ]
+          );
+        downloadedFiles = builtins.map (
+          file:
+          file
+          // {
+            file = nixpkgs.fetchurl {
+              name = "${baseUrl}/${commit}/${target}/${file.name}.gz";
+              url = "${baseUrl}/${commit}/${target}/${file.name}.gz";
+              hash = file.hash;
+            };
           }
-          {
-            name = "query-engine";
-            hash = query-engine-hash;
-            path = "bin/query-engine";
-            variable = "PRISMA_QUERY_ENGINE_BINARY";
-          }
-          {
-            name = if isDarwin then "libquery_engine.dylib.node" else "libquery_engine.so.node";
-            hash = libquery-engine-hash;
-            path = "lib/libquery_engine.node";
-            variable = "PRISMA_QUERY_ENGINE_LIBRARY";
-          }
-        ]
-        ++ (
-          if introspection-engine-hash == null then
-            [ ]
-          else
-            [
-              {
-                name = "introspection-engine";
-                hash = introspection-engine-hash;
-                path = "bin/introspection-engine";
-                variable = "PRISMA_INTROSPECTION_ENGINE_BINARY";
-              }
-            ]
-        )
-        ++ (
-          if migration-engine-hash == null then
-            [ ]
-          else
-            [
-              {
-                name = "migration-engine";
-                hash = migration-engine-hash;
-                path = "bin/migration-engine";
-                variable = "PRISMA_MIGRATION_ENGINE_BINARY";
-              }
-            ]
-        )
-        ++ (
-          if schema-engine-hash == null then
-            [ ]
-          else
-            [
-              {
-                name = "schema-engine";
-                hash = schema-engine-hash;
-                path = "bin/schema-engine";
-                variable = "PRISMA_SCHEMA_ENGINE_BINARY";
-              }
-            ]
-        );
-      downloadedFiles = builtins.map (
-        file:
-        file
-        // {
-          file = nixpkgs.fetchurl {
-            name = "${baseUrl}/${commit}/${target}/${file.name}.gz";
-            url = "${baseUrl}/${commit}/${target}/${file.name}.gz";
-            hash = file.hash;
-          };
-        }
-      ) files;
-      unzipCommands = builtins.map (file: "gunzip -c ${file.file} > $out/${file.path}") downloadedFiles;
-      exportCommands =
-        package: builtins.map (file: "export ${file.variable}=${package}/${file.path}") files;
-    in
-    rec {
-      package = nixpkgs.stdenv.mkDerivation {
-        pname = "prisma-bin";
-        version = commit;
-        nativeBuildInputs = [
-          nixpkgs.zlib
-          openssl
-          nixpkgs.stdenv.cc.cc.lib
-        ] ++ nixpkgs.lib.optionals (!isDarwin) [ nixpkgs.autoPatchelfHook ];
-        phases = [
-          "buildPhase"
-          "postFixupHooks"
-        ];
-        buildPhase = ''
-          mkdir -p $out/bin
-          mkdir -p $out/lib
-          ${nixpkgs.lib.concatStringsSep "\n" unzipCommands}
-          chmod +x $out/bin/*
-        '';
+        ) files;
+        unzipCommands = builtins.map (file: "gunzip -c ${file.file} > $out/${file.path}") downloadedFiles;
+        exportCommands =
+          package: builtins.map (file: "export ${file.variable}=${package}/${file.path}") files;
+      in
+      rec {
+        package = nixpkgs.stdenv.mkDerivation {
+          pname = "prisma-bin";
+          version = commit;
+          nativeBuildInputs = [
+            nixpkgs.zlib
+            openssl
+            nixpkgs.stdenv.cc.cc.lib
+          ] ++ nixpkgs.lib.optionals (!isDarwin) [ nixpkgs.autoPatchelfHook ];
+          phases = [
+            "buildPhase"
+            "postFixupHooks"
+          ];
+          buildPhase = ''
+            mkdir -p $out/bin
+            mkdir -p $out/lib
+            ${nixpkgs.lib.concatStringsSep "\n" unzipCommands}
+            chmod +x $out/bin/*
+          '';
+        };
+        shellHook = nixpkgs.lib.concatStringsSep "\n" (exportCommands package);
       };
-      shellHook = nixpkgs.lib.concatStringsSep "\n" (exportCommands package);
-    };
   # example:
   # a.b123c.d.e12345
   # => e12345
-  afterLastDot = text: nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." text);
   fromPnpmLock =
     path:
     let
@@ -145,9 +173,7 @@ rec {
         "5" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -156,9 +182,7 @@ rec {
         "6" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split ":" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
 
@@ -167,9 +191,7 @@ rec {
         "9" =
           pnpmLock:
           let
-            version = builtins.elemAt (builtins.split "'" (
-              builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2
-            )) 0;
+            version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
           in
           nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
       };
@@ -191,6 +213,64 @@ rec {
       commit = nixpkgs.lib.lists.last (nixpkgs.lib.strings.splitString "." version);
     in
     fromCommit commit;
+  fromYarnLock =
+    path:
+    let
+      # find this line from yarn.lock:
+      # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
+      yarnLockParser1 =
+        file:
+        let
+          versionLine =
+            lib.lists.findFirst
+              (line: builtins.length (lib.strings.splitString "@prisma/engines-version" line) >= 2)
+              # else
+              (throw ''
+                nix-prisma-utils/yarnLockParser1: package @prisma/engines-version not found in lockfile ${path} .
+                please make sure you have installed `@prisma/client`.
+                if you have already installed `@prisma/client` and still see this, please report this to nix-prisma-utils.
+              '')
+              (lines file);
+          # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
+          # -> ["@prisma/engines-version@npm" "6" "3" "0-17" "acc0b9dd43eb689cbd20c9470515d719db10d0b0"]
+          # -> acc0b9dd43eb689cbd20c9470515d719db10d0b0
+          version = lib.lists.last (
+            splitMultipleAndFilterEmpty [
+              "\""
+              ":"
+              "."
+            ] versionLine
+          );
+        in
+        version;
+      isYarnLockV1 =
+        file:
+        lib.lists.any (line: lib.strings.trim line == "# yarn lockfile v1") (
+          lib.strings.splitString "\n" file
+        );
+      # example line:
+      # "@prisma/engines-version@6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
+      yarnV1LockParser = yarnLockParser1;
+      # example line:
+      # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
+      yarnBerryLockParsers = {
+        "8" = yarnLockParser1;
+      };
+
+      lockfile = builtins.readFile path;
+      parse =
+        if isYarnLockV1 lockfile then
+          yarnV1LockParser
+        else
+          let
+            lockfileVersion = builtins.toString (readYAML path).__metadata.version;
+          in
+          yarnBerryLockParsers.${lockfileVersion} or (throw ''
+            nix-prisma-utils: unknown lockfile version ${lockfileVersion}.
+            please report this to nix-prisma-utils with your lockfile.
+          '');
+    in
+    fromCommit (parse lockfile);
   fromBunLock =
     path:
     let
