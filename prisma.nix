@@ -132,7 +132,8 @@ rec {
         toExportStyle :: Attrset<String> -> String
       */
       toExportStyle =
-        attrset: "\n" + (concatMapAttrsStringSep "\n" (name: value: "export ${name}=\"${value}\"") attrset) + "\n";
+        attrset:
+        "\n" + (concatMapAttrsStringSep "\n" (name: value: "export ${name}=\"${value}\"") attrset) + "\n";
     in
     rec {
       package = nixpkgs.stdenv.mkDerivation {
