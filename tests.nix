@@ -38,11 +38,12 @@ let
     in
     writeShellApplication {
       name = "test-npm";
+      runtimeInputs = [ nodejs ];
+      runtimeEnv = prisma.env;
       text = ''
         echo "testing npm"
-        ${prisma.shellHook}
         cd npm
-        ${nodejs}/bin/npm ci
+        npm ci
         ./node_modules/.bin/prisma generate
       '';
     };
@@ -54,11 +55,12 @@ let
     in
     writeShellApplication {
       name = "test-pnpm";
+      runtimeInputs = [ pnpm ];
+      runtimeEnv = prisma.env;
       text = ''
         echo "testing pnpm"
-        ${prisma.shellHook}
         cd pnpm
-        ${pnpm}/bin/pnpm install
+        pnpm install
         ./node_modules/.bin/prisma generate
       '';
     };
@@ -71,9 +73,9 @@ let
     writeShellApplication {
       name = "test-bun";
       runtimeInputs = [ bun ];
+      runtimeEnv = prisma.env;
       text = ''
         echo "testing bun"
-        ${prisma.shellHook}
         cd bun
         bun install
         bunx prisma generate
@@ -88,9 +90,9 @@ let
     writeShellApplication {
       name = "test-yarn-v1";
       runtimeInputs = [ yarn-v1 ];
+      runtimeEnv = prisma.env;
       text = ''
         echo "testing yarn v1"
-        ${prisma.shellHook}
         cd yarn-v1
         yarn-v1 install
         yarn-v1 prisma generate
@@ -105,9 +107,9 @@ let
     writeShellApplication {
       name = "test-yarn-berry";
       runtimeInputs = [ yarn-berry ];
+      runtimeEnv = prisma.env;
       text = ''
         echo "testing yarn berry"
-        ${prisma.shellHook}
         cd yarn-berry
         yarn-berry install
         yarn-berry prisma generate

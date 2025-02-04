@@ -72,7 +72,7 @@
               yarn-v1
               yarn-berry
             ];
-            shellHook = prisma.shellHook;
+            env = prisma.env;
           };
       }
     )
