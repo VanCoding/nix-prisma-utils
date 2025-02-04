@@ -70,25 +70,11 @@ let
         bunx prisma generate
       '';
     };
-  test-all = writeShellApplication {
-    name = "test";
-    runtimeInputs = [
-      test-npm
-      test-pnpm
-      test-bun
-    ];
-    text = ''
-      test-npm
-      test-pnpm
-      test-bun
-    '';
-  };
 in
 {
   inherit
     test-npm
     test-pnpm
     test-bun
-    test-all
     ;
 }

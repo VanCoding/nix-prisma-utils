@@ -1,8 +1,15 @@
 {
   inputs.pkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
+  inputs.treefmt-nix.inputs.nixpkgs.follows = "pkgs";
   outputs =
-    { pkgs, flake-utils, ... }:
+    {
+      self,
+      pkgs,
+      flake-utils,
+      treefmt-nix,
+    }:
     let
       prisma-factory = import ./prisma.nix;
     in
@@ -10,9 +17,20 @@
       system:
       let
         nixpkgs = import pkgs { inherit system; };
+        treefmt = treefmt-nix.lib.evalModule nixpkgs {
+          # nixfmt is nixfmt-rfc-style
+          programs.nixfmt.enable = true;
+        };
       in
       {
-        packages = import ./tests.nix { inherit prisma-factory nixpkgs; };
+        formatter = treefmt.config.build.wrapper;
+        checks =
+          (nixpkgs.callPackages ./tests.nix {
+            inherit prisma-factory nixpkgs; # nixpkgs can be removed once it is renamed to pkgs
+          })
+          // {
+            format = treefmt.config.build.check self;
+          };
         devShells.default =
           let
             prisma = (

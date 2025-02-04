@@ -37,7 +37,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "pkgs": "pkgs"
+        "pkgs": "pkgs",
+        "treefmt-nix": "treefmt-nix"
       }
     },
     "systems": {
@@ -52,6 +53,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "treefmt-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "pkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1738070913,
+        "narHash": "sha256-j6jC12vCFsTGDmY2u1H12lMr62fnclNjuCtAdF1a4Nk=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "bebf27d00f7d10ba75332a0541ac43676985dea3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
         "type": "github"
       }
     }
