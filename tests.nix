@@ -1,5 +1,14 @@
-{ nixpkgs, prisma-factory }:
-with nixpkgs;
+{
+  nixpkgs,
+  writeShellApplication,
+  prisma-factory,
+
+  nodejs,
+  pnpm,
+  yarn-v1,
+  yarn-berry,
+  bun,
+}:
 let
   hashesBySystem = {
     x86_64-linux = {
@@ -33,7 +42,7 @@ let
         echo "testing npm"
         ${prisma.shellHook}
         cd npm
-        ${nixpkgs.nodejs}/bin/npm ci
+        ${nodejs}/bin/npm ci
         ./node_modules/.bin/prisma generate
       '';
     };
@@ -49,7 +58,7 @@ let
         echo "testing pnpm"
         ${prisma.shellHook}
         cd pnpm
-        ${nixpkgs.pnpm}/bin/pnpm install
+        ${pnpm}/bin/pnpm install
         ./node_modules/.bin/prisma generate
       '';
     };
@@ -61,7 +70,7 @@ let
     in
     writeShellApplication {
       name = "test-bun";
-      runtimeInputs = [ nixpkgs.bun ];
+      runtimeInputs = [ bun ];
       text = ''
         echo "testing bun"
         ${prisma.shellHook}
@@ -70,11 +79,47 @@ let
         bunx prisma generate
       '';
     };
+  test-yarn-v1 =
+    let
+      prisma =
+        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromYarnLock
+          ./yarn-v1/yarn.lock;
+    in
+    writeShellApplication {
+      name = "test-yarn-v1";
+      runtimeInputs = [ yarn-v1 ];
+      text = ''
+        echo "testing yarn v1"
+        ${prisma.shellHook}
+        cd yarn-v1
+        yarn-v1 install
+        yarn-v1 prisma generate
+      '';
+    };
+  test-yarn-berry =
+    let
+      prisma =
+        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromYarnLock
+          ./yarn-berry/yarn.lock;
+    in
+    writeShellApplication {
+      name = "test-yarn-berry";
+      runtimeInputs = [ yarn-berry ];
+      text = ''
+        echo "testing yarn berry"
+        ${prisma.shellHook}
+        cd yarn-berry
+        yarn-berry install
+        yarn-berry prisma generate
+      '';
+    };
 in
 {
   inherit
     test-npm
     test-pnpm
     test-bun
+    test-yarn-v1
+    test-yarn-berry
     ;
 }
