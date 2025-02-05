@@ -24,17 +24,21 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
 
 ```nix
 {
-  inputs.pkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  };
 
   outputs =
-    { pkgs, prisma-utils, ... }:
+    { nixpkgs, prisma-utils, ... }:
     let
-      nixpkgs = import pkgs { system = "x86_64-linux"; };
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
       prisma =
         (prisma-utils.lib.prisma-factory {
-          inherit nixpkgs;
-          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; # just copy these hashes for now, and then change them when nix complains about the mismatch
+          inherit pkgs;
+          # just copy these hashes for now, and then change them when nix complains about the mismatch
+          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; 
           query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
           libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
           schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
@@ -42,7 +46,7 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
           ./package-lock.json; # <--- path to our package-lock.json file that contains the version of prisma-engines
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         env = prisma.env;
         # or, you can use `shellHook` instead of `env` to load the same environment variables.
         # shellHook = prisma.shellHook;
@@ -58,27 +62,29 @@ both yarn v1 and yarn-berry should work.
 
 ```nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  };
 
   outputs =
     { nixpkgs, prisma-utils, ... }:
     let
       system = "x86_64-linux";
-      nixpkgs = nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.${system};
       prisma =
         (prisma-utils.lib.prisma-factory {
-          inherit nixpkgs;
+          inherit pkgs;
           # just copy these hashes for now, and then change them when nix complains about the mismatch
           prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
           query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
           libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
           schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
         }).fromYarnLock
-          ./yarn.lock; # <--- path to our package-lock.json file that contains the version of prisma-engines
+          ./yarn.lock; # <--- path to our yarn.lock file that contains the version of prisma-engines
     in
     {
-      devShells.${system}.default = nixpkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         shellHook = prisma.shellHook;
       };
     };
@@ -89,17 +95,21 @@ both yarn v1 and yarn-berry should work.
 
 ```nix
 {
-  inputs.pkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  };
 
   outputs =
-    { pkgs, prisma-utils, ... }:
+    { nixpkgs, prisma-utils, ... }:
     let
-      nixpkgs = import pkgs { system = "x86_64-linux"; };
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
       prisma =
         (prisma-utils.lib.prisma-factory {
-          inherit nixpkgs;
-          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; # just copy these hashes for now, and then change them when nix complains about the mismatch
+          inherit pkgs;
+          # just copy these hashes for now, and then change them when nix complains about the mismatch
+          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
           query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
           libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
           schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
@@ -107,7 +117,7 @@ both yarn v1 and yarn-berry should work.
           ./pnpm-lock.yaml; # <--- path to our pnpm-lock.yaml file that contains the version of prisma-engines
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         env = prisma.env;
         # or, you can use `shellHook` instead of `env` to load the same environment variables.
         # shellHook = prisma.shellHook;
@@ -121,17 +131,21 @@ both yarn v1 and yarn-berry should work.
 
 ```nix
 {
-  inputs.pkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+  };
 
   outputs =
-    { pkgs, prisma-utils, ... }:
+    { nixpkgs, prisma-utils, ... }:
     let
-      nixpkgs = import pkgs { system = "x86_64-linux"; };
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
       prisma =
         (prisma-utils.lib.prisma-factory {
-          inherit nixpkgs;
-          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; # just copy these hashes for now, and then change them when nix complains about the mismatch
+          inherit pkgs;
+          # just copy these hashes for now, and then change them when nix complains about the mismatch
+          prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s="; 
           query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
           libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
           schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
@@ -140,7 +154,7 @@ both yarn v1 and yarn-berry should work.
           # NOTE: does not work with bun.lockb!
     in
     {
-      devShells.x86_64-linux.default = nixpkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         env = prisma.env;
         # or, you can use `shellHook` instead of `env` to load the same environment variables.
         # shellHook = prisma.shellHook;

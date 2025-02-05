@@ -1,5 +1,5 @@
 {
-  nixpkgs,
+  pkgs,
   writeShellApplication,
   prisma-factory,
 
@@ -33,7 +33,7 @@ let
   test-npm =
     let
       prisma =
-        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromNpmLock
+        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromNpmLock
           ./npm/package-lock.json;
     in
     writeShellApplication {
@@ -50,7 +50,7 @@ let
   test-pnpm =
     let
       prisma =
-        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromPnpmLock
+        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromPnpmLock
           ./pnpm/pnpm-lock.yaml;
     in
     writeShellApplication {
@@ -66,9 +66,7 @@ let
     };
   test-bun =
     let
-      prisma =
-        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromBunLock
-          ./bun/bun.lock;
+      prisma = (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromBunLock ./bun/bun.lock;
     in
     writeShellApplication {
       name = "test-bun";
@@ -84,7 +82,7 @@ let
   test-yarn-v1 =
     let
       prisma =
-        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromYarnLock
+        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromYarnLock
           ./yarn-v1/yarn.lock;
     in
     writeShellApplication {
@@ -101,7 +99,7 @@ let
   test-yarn-berry =
     let
       prisma =
-        (prisma-factory ({ inherit nixpkgs; } // hashesBySystem.${nixpkgs.system})).fromYarnLock
+        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromYarnLock
           ./yarn-berry/yarn.lock;
     in
     writeShellApplication {
