@@ -1,12 +1,14 @@
 {
-  inputs.pkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
-  inputs.treefmt-nix.inputs.nixpkgs.follows = "pkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+  };
   outputs =
     {
       self,
-      pkgs,
+      nixpkgs,
       flake-utils,
       treefmt-nix,
     }:
@@ -16,20 +18,21 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        nixpkgs = import pkgs { inherit system; };
-        yarn-v1 = nixpkgs.writeShellApplication {
+        pkgs = nixpkgs.legacyPackages.${system};
+
+        yarn-v1 = pkgs.writeShellApplication {
           name = "yarn-v1";
           checkPhase = "";
-          runtimeInputs = [ nixpkgs.yarn ];
+          runtimeInputs = [ pkgs.yarn ];
           text = "yarn $@";
         };
-        yarn-berry = nixpkgs.writeShellApplication {
+        yarn-berry = pkgs.writeShellApplication {
           name = "yarn-berry";
           checkPhase = "";
-          runtimeInputs = [ nixpkgs.yarn-berry ];
+          runtimeInputs = [ pkgs.yarn-berry ];
           text = "yarn $@";
         };
-        treefmt = treefmt-nix.lib.evalModule nixpkgs {
+        treefmt = treefmt-nix.lib.evalModule pkgs {
           # nixfmt is nixfmt-rfc-style
           programs.nixfmt.enable = true;
         };
@@ -37,10 +40,10 @@
       {
         formatter = treefmt.config.build.wrapper;
         checks =
-          (nixpkgs.callPackages ./tests.nix {
+          (pkgs.callPackages ./tests.nix {
             inherit
+              pkgs
               prisma-factory
-              nixpkgs
               yarn-v1
               yarn-berry
               ;
@@ -52,7 +55,7 @@
           let
             prisma = (
               (prisma-factory {
-                inherit nixpkgs;
+                inherit pkgs;
                 prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
                 query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
                 libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
@@ -61,14 +64,14 @@
                 "6a3747c37ff169c90047725a05a6ef02e32ac97e"
             );
           in
-          nixpkgs.mkShell {
+          pkgs.mkShell {
             buildInputs = [
-              nixpkgs.nodejs-18_x
-              nixpkgs.pnpm
-              nixpkgs.bun
-              nixpkgs.stdenv.cc.cc.lib
+              pkgs.nodejs-18_x
+              pkgs.pnpm
+              pkgs.bun
+              pkgs.stdenv.cc.cc.lib
               prisma.package
-              nixpkgs.nixfmt-rfc-style
+              pkgs.nixfmt-rfc-style
               yarn-v1
               yarn-berry
             ];
