@@ -8,7 +8,15 @@ on:
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          # see about runners: https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/choosing-the-runner-for-a-job#standard-github-hosted-runners-for-public-repositories
+          - ubuntu-latest # x64 linux
+          - ubuntu-24.04-arm # arm linux
+          - macos-13 # Intel macOS
+          - macos-latest # arm macOS
+    runs-on: ${{ matrix.platform }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
