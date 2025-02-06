@@ -27,6 +27,7 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+    prisma-utils.inputs.nixpkgs.follows = "nixpkgs"; # force nix-prisma-utils to use same version of nixpkgs, to avoid package duplication.
   };
 
   outputs =
@@ -65,6 +66,7 @@ both yarn v1 and yarn-berry should work.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+    prisma-utils.inputs.nixpkgs.follows = "nixpkgs"; # force nix-prisma-utils to use same version of nixpkgs, to avoid package duplication.
   };
 
   outputs =
@@ -98,6 +100,7 @@ both yarn v1 and yarn-berry should work.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+    prisma-utils.inputs.nixpkgs.follows = "nixpkgs"; # force nix-prisma-utils to use same version of nixpkgs, to avoid package duplication.
   };
 
   outputs =
@@ -134,6 +137,7 @@ both yarn v1 and yarn-berry should work.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     prisma-utils.url = "github:VanCoding/nix-prisma-utils";
+    prisma-utils.inputs.nixpkgs.follows = "nixpkgs"; # force nix-prisma-utils to use same version of nixpkgs, to avoid package duplication.
   };
 
   outputs =
