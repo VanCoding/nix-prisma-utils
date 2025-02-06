@@ -23,7 +23,7 @@
 }:
 commit:
 if builtins.stringLength commit != 40 then
-  throw "nvalid commit: got ${commit}"
+  throw "invalid commit: got ${commit}"
 else
   let
     hostname = "binaries.prisma.sh";
