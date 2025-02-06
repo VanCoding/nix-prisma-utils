@@ -204,8 +204,6 @@ pkgs.lib.warnIf (nixpkgs != null)
     fromPnpmLock =
       path:
       let
-        textAfter = keyword: text: builtins.elemAt (builtins.split keyword text) 1;
-        textBefore = keyword: text: builtins.elemAt (builtins.split keyword text) 0;
         parsePnpmLockVersion =
           pnpmLock:
           if pkgs.lib.strings.hasPrefix "lockfileVersion: 5" pnpmLock then
@@ -220,7 +218,7 @@ pkgs.lib.warnIf (nixpkgs != null)
           "5" =
             pnpmLock:
             let
-              version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version/") pnpmLock) 2)) 0;
+              version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split "@prisma/engines-version/" pnpmLock) 2)) 0;
             in
             pkgs.lib.lists.last (pkgs.lib.strings.splitString "." version);
 
@@ -229,7 +227,7 @@ pkgs.lib.warnIf (nixpkgs != null)
           "6" =
             pnpmLock:
             let
-              version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
+              version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split "@prisma/engines-version@" pnpmLock) 2)) 0;
             in
             pkgs.lib.lists.last (pkgs.lib.strings.splitString "." version);
 
@@ -238,7 +236,7 @@ pkgs.lib.warnIf (nixpkgs != null)
           "9" =
             pnpmLock:
             let
-              version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split ("@prisma/engines-version@") pnpmLock) 2)) 0;
+              version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split "@prisma/engines-version@" pnpmLock) 2)) 0;
             in
             pkgs.lib.lists.last (pkgs.lib.strings.splitString "." version);
         };
