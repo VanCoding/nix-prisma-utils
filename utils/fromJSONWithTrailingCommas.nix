@@ -8,27 +8,7 @@
 { }:
 jsonc:
 builtins.fromJSON (
-  builtins.replaceStrings
-    [
-      ",}"
-      ",]"
-    ]
-    [
-      "}"
-      "]"
-    ]
-    (
-      builtins.replaceStrings
-        [
-          " "
-          "\t"
-          "\n"
-        ]
-        [
-          ""
-          ""
-          ""
-        ]
-        jsonc
-    )
+  builtins.replaceStrings [ ",}" ",]" ] [ "}" "]" ] (
+    builtins.replaceStrings [ " " "\t" "\n" ] [ "" "" "" ] jsonc
+  )
 )

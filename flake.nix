@@ -34,7 +34,10 @@
         };
         treefmt = treefmt-nix.lib.evalModule pkgs {
           # nixfmt is nixfmt-rfc-style
-          programs.nixfmt.enable = true;
+          programs.nixfmt = {
+            enable = true;
+            strict = true;
+          };
         };
       in
       {
@@ -80,8 +83,6 @@
       }
     )
     // {
-      lib = {
-        inherit prisma-factory;
-      };
+      lib = { inherit prisma-factory; };
     };
 }

@@ -1,7 +1,4 @@
-{
-  lib,
-  utils,
-}:
+{ lib, utils }:
 path:
 let
   # find this line from yarn.lock:
@@ -22,13 +19,7 @@ let
       # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
       # -> ["@prisma/engines-version@npm" "6" "3" "0-17" "acc0b9dd43eb689cbd20c9470515d719db10d0b0"]
       # -> acc0b9dd43eb689cbd20c9470515d719db10d0b0
-      version = lib.lists.last (
-        utils.splitMultipleAndFilterEmpty [
-          "\""
-          ":"
-          "."
-        ] versionLine
-      );
+      version = lib.lists.last (utils.splitMultipleAndFilterEmpty [ "\"" ":" "." ] versionLine);
     in
     version;
   isYarnLockV1 =
