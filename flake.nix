@@ -68,17 +68,16 @@
             );
           in
           pkgs.mkShell {
+            inherit (prisma) env;
             buildInputs = [
               pkgs.nodejs-18_x
               pkgs.pnpm
               pkgs.bun
               pkgs.stdenv.cc.cc.lib
-              prisma.package
               pkgs.nixfmt-rfc-style
               yarn-v1
               yarn-berry
             ];
-            env = prisma.env;
           };
       }
     )
