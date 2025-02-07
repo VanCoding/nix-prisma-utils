@@ -69,7 +69,7 @@
           in
           pkgs.mkShell {
             inherit (prisma) env;
-            buildInputs = [
+            packages = [
               pkgs.nodejs-18_x
               pkgs.pnpm
               pkgs.bun
