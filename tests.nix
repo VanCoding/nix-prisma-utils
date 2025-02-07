@@ -50,7 +50,7 @@ let
         echo "testing npm"
         cd npm
         npm ci
-        ./node_modules/.bin/prisma generate
+        npm prisma generate
       '';
     };
   test-pnpm =
@@ -67,7 +67,7 @@ let
         echo "testing pnpm"
         cd pnpm
         pnpm install
-        ./node_modules/.bin/prisma generate
+        pnpm prisma generate
       '';
     };
   test-bun =
