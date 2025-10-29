@@ -16,7 +16,7 @@ let
         x86_64-linux.hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
         aarch64-linux.hash = "sha256-RvloEj41YTf+SwaHLqBlJ5Rpu00UPENprsQRHam3zic=";
         x86_64-darwin.hash = "";
-        aarch64-darwin.hash = "";
+        aarch64-darwin.hash = "sha256-LxpKAAjnRn8eH7h9trOOYKf0WcY+aHGrzzVGW2aViek=";
       }
     else
       {
