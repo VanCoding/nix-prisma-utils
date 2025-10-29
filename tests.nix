@@ -14,7 +14,7 @@ let
     if fetcherMode == "new" then
       {
         x86_64-linux.hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
-        aarch64-linux.hash = "";
+        aarch64-linux.hash = "sha256-RvloEj41YTf+SwaHLqBlJ5Rpu00UPENprsQRHam3zic=";
         x86_64-darwin.hash = "";
         aarch64-darwin.hash = "";
       }
