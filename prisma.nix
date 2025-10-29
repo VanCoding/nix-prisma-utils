@@ -25,27 +25,29 @@
     x86_64-darwin = "darwin";
     aarch64-darwin = "darwin-arm64";
   },
-}: let
+}:
+let
   inherit (pkgs) lib;
-  parsers = pkgs.callPackage ./lib/parsers.nix {};
+  parsers = pkgs.callPackage ./lib/parsers.nix { };
   binaryTarget = binaryTargetBySystem.${pkgs.system};
   commitValue =
-    if _commit != null
-    then _commit
-    else if npmLock != null
-    then fromNpmLock npmLock
-    else if yarnLock != null
-    then fromYarnLock yarnLock
-    else if pnpmLock != null
-    then fromPnpmLock pnpmLock
-    else if bunLock != null
-    then fromBunLock bunLock
-    else null;
-  fromCommit = commit:
-    if builtins.stringLength commit != 40
-    then throw "invalid commit: got ${commit}"
-    else if hash != null
-    then
+    if _commit != null then
+      _commit
+    else if npmLock != null then
+      fromNpmLock npmLock
+    else if yarnLock != null then
+      fromYarnLock yarnLock
+    else if pnpmLock != null then
+      fromPnpmLock pnpmLock
+    else if bunLock != null then
+      fromBunLock bunLock
+    else
+      null;
+  fromCommit =
+    commit:
+    if builtins.stringLength commit != 40 then
+      throw "invalid commit: got ${commit}"
+    else if hash != null then
       pkgs.callPackage ./lib/fetcher.nix {
         inherit
           commit
@@ -77,7 +79,7 @@
   fromYarnLock = file: fromCommit (parsers.parseYarnLock file);
   fromBunLock = file: fromCommit (parsers.parseBunLock file);
 in
-  lib.warnIf (nixpkgs != null)
+lib.warnIf (nixpkgs != null)
   ''
     `nixpkgs` argument in nix-prisma-utils is deprecated. please replace it with `pkgs`.
     examples:
@@ -85,11 +87,17 @@ in
       if your code has `nixpkgs = pkgs;`, replace it with `pkgs = pkgs;` or `inherit pkgs;`.
   ''
   (
-    if commitValue != null
-    then # direct fetch
+    if commitValue != null then # direct fetch
       fromCommit commitValue
-    else {
-      # builder pattern
-      inherit fromCommit fromNpmLock fromYarnLock fromPnpmLock fromBunLock;
-    }
+    else
+      {
+        # builder pattern
+        inherit
+          fromCommit
+          fromNpmLock
+          fromYarnLock
+          fromPnpmLock
+          fromBunLock
+          ;
+      }
   )
