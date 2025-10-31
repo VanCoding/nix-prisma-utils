@@ -41,6 +41,16 @@
         formatter = treefmt.config.build.wrapper;
         checks =
           (pkgs.callPackages ./tests.nix {
+            fetcherMode = "new";
+            inherit
+              pkgs
+              prisma-factory
+              yarn-v1
+              yarn-berry
+              ;
+          })
+          // (pkgs.callPackages ./tests.nix {
+            fetcherMode = "legacy";
             inherit
               pkgs
               prisma-factory
@@ -51,18 +61,19 @@
           // {
             format = treefmt.config.build.check self;
           };
+        packages.default =
+          (prisma-factory {
+            inherit pkgs;
+            hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
+            _commit = "6a3747c37ff169c90047725a05a6ef02e32ac97e";
+          }).package;
         devShells.default =
           let
-            prisma = (
-              (prisma-factory {
-                inherit pkgs;
-                prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
-                query-engine-hash = "sha256-6ILWB6ZmK4ac6SgAtqCkZKHbQANmcqpWO92U8CfkFzw=";
-                libquery-engine-hash = "sha256-n9IimBruqpDJStlEbCJ8nsk8L9dDW95ug+gz9DHS1Lc=";
-                schema-engine-hash = "sha256-j38xSXOBwAjIdIpbSTkFJijby6OGWCoAx+xZyms/34Q=";
-              }).fromCommit
-                "6a3747c37ff169c90047725a05a6ef02e32ac97e"
-            );
+            prisma = prisma-factory {
+              inherit pkgs;
+              hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
+              _commit = "6a3747c37ff169c90047725a05a6ef02e32ac97e";
+            };
           in
           pkgs.mkShell {
             buildInputs = [
