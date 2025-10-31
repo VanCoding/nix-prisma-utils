@@ -30,19 +30,6 @@ let
   inherit (pkgs) lib;
   parsers = pkgs.callPackage ./lib/parsers.nix { };
   binaryTarget = binaryTargetBySystem.${pkgs.system};
-  commitValue =
-    if _commit != null then
-      _commit
-    else if npmLock != null then
-      fromNpmLock npmLock
-    else if yarnLock != null then
-      fromYarnLock yarnLock
-    else if pnpmLock != null then
-      fromPnpmLock pnpmLock
-    else if bunLock != null then
-      fromBunLock bunLock
-    else
-      null;
   fromCommit =
     commit:
     if builtins.stringLength commit != 40 then
@@ -87,8 +74,16 @@ lib.warnIf (nixpkgs != null)
       if your code has `nixpkgs = pkgs;`, replace it with `pkgs = pkgs;` or `inherit pkgs;`.
   ''
   (
-    if commitValue != null then # direct fetch
-      fromCommit commitValue
+    if _commit != null then
+      fromCommit _commit
+    else if npmLock != null then
+      fromNpmLock npmLock
+    else if yarnLock != null then
+      fromYarnLock yarnLock
+    else if pnpmLock != null then
+      fromPnpmLock pnpmLock
+    else if bunLock != null then
+      fromBunLock bunLock
     else
       {
         # builder pattern
