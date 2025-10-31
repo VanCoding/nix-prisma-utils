@@ -34,13 +34,13 @@ let
     if _commit != null then
       _commit
     else if npmLock != null then
-      fromNpmLock npmLock
+      parsers.parseNpmLock npmLock
     else if yarnLock != null then
-      fromYarnLock yarnLock
+      parsers.parseYarnLock yarnLock
     else if pnpmLock != null then
-      fromPnpmLock pnpmLock
+      parsers.parsePnpmLock pnpmLock
     else if bunLock != null then
-      fromBunLock bunLock
+      parsers.parseBunLock bunLock
     else
       null;
   fromCommit =

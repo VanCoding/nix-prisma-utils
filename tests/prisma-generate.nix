@@ -49,7 +49,7 @@ let
     let
       prisma =
         (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromNpmLock
-          ./npm/package-lock.json;
+          ../npm/package-lock.json;
     in
     writeShellApplication {
       name = "test-npm";
@@ -66,7 +66,7 @@ let
     let
       prisma =
         (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromPnpmLock
-          ./pnpm/pnpm-lock.yaml;
+          ../pnpm/pnpm-lock.yaml;
     in
     writeShellApplication {
       name = "test-pnpm";
@@ -81,7 +81,9 @@ let
     };
   test-bun =
     let
-      prisma = (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromBunLock ./bun/bun.lock;
+      prisma =
+        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromBunLock
+          ../bun/bun.lock;
     in
     writeShellApplication {
       name = "test-bun";
@@ -98,7 +100,7 @@ let
     let
       prisma =
         (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromYarnLock
-          ./yarn-v1/yarn.lock;
+          ../yarn-v1/yarn.lock;
     in
     writeShellApplication {
       name = "test-yarn-v1";
@@ -115,7 +117,7 @@ let
     let
       prisma =
         (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromYarnLock
-          ./yarn-berry/yarn.lock;
+          ../yarn-berry/yarn.lock;
     in
     writeShellApplication {
       name = "test-yarn-berry";

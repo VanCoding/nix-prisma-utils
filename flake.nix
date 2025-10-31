@@ -40,24 +40,13 @@
       {
         formatter = treefmt.config.build.wrapper;
         checks =
-          (pkgs.callPackages ./tests.nix {
-            fetcherMode = "new";
+          pkgs.callPackages ./tests {
             inherit
-              pkgs
               prisma-factory
               yarn-v1
               yarn-berry
               ;
-          })
-          // (pkgs.callPackages ./tests.nix {
-            fetcherMode = "legacy";
-            inherit
-              pkgs
-              prisma-factory
-              yarn-v1
-              yarn-berry
-              ;
-          })
+          }
           // {
             format = treefmt.config.build.check self;
           };
