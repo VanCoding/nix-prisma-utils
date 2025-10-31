@@ -32,17 +32,18 @@ With nix-prisma-utils it's the other way around. You can simply install prisma t
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      prisma =
-        prisma-utils.lib.prisma-factory {
-          inherit pkgs;
-          # leave the hash empty, nix will complain and tell you the right hash
-          hash = "";
-          npmLock = ./package-lock.json # <--- path to our package-lock.json file that contains the version of prisma-engines
-          # if you use another package manager from npm, choose yours from
-          #   yarnLock = ./yarn.lock;
-          #   pnpmLock = ./pnpm-lock.yaml;
-          #   bunLock = ./bun.lock;
-        };
+      prisma = prisma-utils.lib.prisma-factory {
+        inherit pkgs;
+        # leave the hash empty, nix will complain and tell you the right hash
+        hash = "";
+        npmLock = ./package-lock.json; # <--- path to our package-lock.json file that contains the version of prisma-engines
+        # if you use another package manager from npm, choose yours from
+        #   yarnLock = ./yarn.lock;
+        #   pnpmLock = ./pnpm-lock.yaml;
+        #   bunLock = ./bun.lock;
+        # or if you want to specify the prisma commit directly
+        #   _commit = "...";
+      };
     in
     {
       devShells.${system}.default = pkgs.mkShell {
