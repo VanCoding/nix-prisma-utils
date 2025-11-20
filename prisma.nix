@@ -34,8 +34,8 @@ let
     _commit:
     let
       # HACK: _commit may be "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513" instead of "0c19ccc313cf9911a90d99d2ac2eb0280c76c513"
-      commit = lib.lists.last (lib.splitString "-" _commit);
-      # prisma >= v7 has fewer components;
+      commit = lib.strings.removePrefix "next-" _commit;
+      # prisma >= v7 has fewer components
       isv7 = lib.strings.hasPrefix "next-" _commit;
     in
     if builtins.stringLength commit != 40 then
