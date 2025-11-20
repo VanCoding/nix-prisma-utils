@@ -10,6 +10,7 @@
   commit,
   opensslVersion,
   binaryTarget,
+  isv7,
   # = hashes
   prisma-fmt-hash,
   query-engine-hash,
@@ -32,6 +33,21 @@ let
         path = "bin/prisma-fmt";
         variable = "PRISMA_FMT_BINARY";
       }
+    ]
+    ++ (
+      if schema-engine-hash == null then
+        [ ]
+      else
+        [
+          {
+            name = "schema-engine";
+            hash = schema-engine-hash;
+            path = "bin/schema-engine";
+            variable = "PRISMA_SCHEMA_ENGINE_BINARY";
+          }
+        ]
+    )
+    ++ lib.optionals (!isv7) [
       {
         name = "query-engine";
         hash = query-engine-hash;
@@ -68,19 +84,6 @@ let
             hash = migration-engine-hash;
             path = "bin/migration-engine";
             variable = "PRISMA_MIGRATION_ENGINE_BINARY";
-          }
-        ]
-    )
-    ++ (
-      if schema-engine-hash == null then
-        [ ]
-      else
-        [
-          {
-            name = "schema-engine";
-            hash = schema-engine-hash;
-            path = "bin/schema-engine";
-            variable = "PRISMA_SCHEMA_ENGINE_BINARY";
           }
         ]
     );

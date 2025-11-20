@@ -85,6 +85,21 @@
                 (prisma-legacy.fromNpmLock ./npm/package-lock.json).env
                 == (prisma-new "npmLock" ./npm/package-lock.json).env;
               pkgs.hello;
+            prisma-next =
+              let
+                # force download debian for consistent hash across systems
+                binaryTargetBySystem = {
+                  x86_64-linux = "debian";
+                  aarch64-linux = "debian";
+                  x86_64-darwin = "debian";
+                  aarch64-darwin = "debian";
+                };
+              in
+              (self.lib.prisma-factory {
+                inherit pkgs binaryTargetBySystem;
+                _commit = "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513";
+                hash = "sha256-JWX+N/mmp9uJLcv4XFbQ3yg34fFf2BLIUpOLrrfTjEM=";
+              }).package;
           };
         packages.default =
           (prisma-factory {

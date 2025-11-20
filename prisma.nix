@@ -31,10 +31,17 @@ let
   parsers = pkgs.callPackage ./lib/parsers.nix { };
   binaryTarget = binaryTargetBySystem.${pkgs.system};
   fromCommit =
-    commit:
+    _commit:
+    let
+      # HACK: _commit may be "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513" instead of "0c19ccc313cf9911a90d99d2ac2eb0280c76c513"
+      commit = lib.lists.last (lib.splitString "-" _commit);
+      # prisma >= v7 has fewer components;
+      isv7 = lib.strings.hasPrefix "next-" _commit;
+    in
     if builtins.stringLength commit != 40 then
       throw "invalid commit: got ${commit}"
     else if hash != null then
+      # use new fetcher
       pkgs.callPackage ./lib/fetcher.nix {
         inherit
           commit
@@ -43,9 +50,9 @@ let
           binaryTarget
           hash
           components
+          isv7
           ;
       }
-    # use new fetcher
     else
       pkgs.callPackage ./lib/legacyFetcher.nix {
         inherit
@@ -53,6 +60,7 @@ let
           openssl
           opensslVersion
           binaryTarget
+          isv7
           prisma-fmt-hash
           query-engine-hash
           libquery-engine-hash
