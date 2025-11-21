@@ -85,6 +85,19 @@
                 (prisma-legacy.fromNpmLock ./npm/package-lock.json).env
                 == (prisma-new "npmLock" ./npm/package-lock.json).env;
               pkgs.hello;
+            prisma-next =
+              (self.lib.prisma-factory {
+                pkgs = pkgs;
+                _commit = "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513";
+                hash =
+                  {
+                    x86_64-linux = "sha256-JWX+N/mmp9uJLcv4XFbQ3yg34fFf2BLIUpOLrrfTjEM=";
+                    x86_64-darwin = "sha256-WNwFOoeDOebbfAh4y/NvZCyE9otaJdg2hHb4ifEFD+Y=";
+                    aarch64-linux = "sha256-f9FuPZaGx0FwKo4pA9f8g82MTcAzYLwWslxjb7oqk6E=";
+                    aarch64-darwin = "sha256-NMI+JcP3epBO3V37D19TDgzivMnPekgrYqUrXB6qNV0=";
+                  }
+                  .${pkgs.system};
+              }).package;
           };
         packages.default =
           (prisma-factory {
