@@ -25,8 +25,7 @@ let
   # example:
   # a.b123c.d.e12345
   # => e12345
-  afterLastDot = text: lib.lists.last (lib.strings.splitString "." text);
-
+  afterLastAt = text: lib.lists.last (lib.strings.splitString "@" text);
   readYAML = callPackage ./readYAML.nix { };
 in
 # polyfill: the function in nixis implemented on Dec 6, 2024. replace this with one from lib after 24.11 reaches EOL.
@@ -50,7 +49,7 @@ in
           let
             version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split "@prisma/engines-version/" pnpmLock) 2)) 0;
           in
-          lib.lists.last (lib.strings.splitString "." version);
+          lib.lists.last (lib.strings.splitString "/" version);
 
         # example line:
         # /@prisma/engines-version@5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e:
@@ -59,7 +58,7 @@ in
           let
             version = builtins.elemAt (builtins.split ":" (builtins.elemAt (builtins.split "@prisma/engines-version@" pnpmLock) 2)) 0;
           in
-          lib.lists.last (lib.strings.splitString "." version);
+          lib.lists.last (lib.strings.splitString "@" version);
 
         # exmple line:
         # '@prisma/engines-version@5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022':
@@ -68,26 +67,25 @@ in
           let
             version = builtins.elemAt (builtins.split "'" (builtins.elemAt (builtins.split "@prisma/engines-version@" pnpmLock) 2)) 0;
           in
-          lib.lists.last (lib.strings.splitString "." version);
+          lib.lists.last (lib.strings.splitString "@" version);
       };
       pnpmLock = builtins.readFile path;
       pnpmLockVersion = parsePnpmLockVersion pnpmLock;
       pnpmLockParser = pnpmLockParsers.${pnpmLockVersion};
-      commit = pnpmLockParser pnpmLock;
+      versionString = pnpmLockParser pnpmLock;
     in
-    commit;
+    versionString;
   parseNpmLock =
     path:
     let
       packageLock = builtins.fromJSON (builtins.readFile path);
-      version =
+      versionString =
         if builtins.hasAttr "dependencies" packageLock then
           packageLock.dependencies.${"@prisma/engines-version"}.version
         else
           packageLock.packages.${"node_modules/@prisma/engines-version"}.version;
-      commit = lib.lists.last (lib.strings.splitString "." version);
     in
-    commit;
+    versionString;
   parseYarnLock =
     path:
     let
@@ -109,15 +107,14 @@ in
           # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
           # -> ["@prisma/engines-version@npm" "6" "3" "0-17" "acc0b9dd43eb689cbd20c9470515d719db10d0b0"]
           # -> acc0b9dd43eb689cbd20c9470515d719db10d0b0
-          version = lib.lists.last (
+          versionString = lib.lists.last (
             splitMultipleAndFilterEmpty [
               "\""
               ":"
-              "."
             ] versionLine
           );
         in
-        version;
+        versionString;
       isYarnLockV1 =
         file:
         lib.lists.any (line: lib.strings.trim line == "# yarn lockfile v1") (
@@ -190,7 +187,7 @@ in
         "0" = bunLockParsers."1";
         "1" =
           lock:
-          afterLastDot (
+          afterLastAt (
             builtins.elemAt (lock."packages"."@prisma/engines-version" or (throw ''
               nix-prisma-utils: lockfile parsing error: package @prisma/engines-version not found.
               please make sure that you have @prisma/client installed.
@@ -208,7 +205,22 @@ in
           nix-prisma-utils: Unsupported lockfile version: ${lockfileVersion}
           nix-prisma-utils currently supports bun.lock version of 0 and 1.
         '');
-      commit = parse lockfile;
+      versionString = parse lockfile;
     in
-    commit;
+    versionString;
+
+  parseVersionString =
+    versionString:
+    let
+      matches = lib.strings.match ''^([0-9]+)\.([0-9]+)\.([0-9]+).*([0-9a-fA-F]{40})$'' versionString;
+    in
+    if matches != null then
+      {
+        majorVersion = lib.toInt (lib.lists.elemAt matches 0);
+        minorVersion = lib.toInt (lib.lists.elemAt matches 1);
+        patchVersion = lib.toInt (lib.lists.elemAt matches 2);
+        commit = lib.lists.elemAt matches 3;
+      }
+    else
+      throw "nix-prisma-utils: Version string '${versionString}' does not match the expected format.";
 }
