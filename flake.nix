@@ -88,7 +88,7 @@
             prisma-next =
               (self.lib.prisma-factory {
                 pkgs = pkgs;
-                _commit = "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513";
+                versionString = "6.20.0-16.next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513";
                 hash =
                   {
                     x86_64-linux = "sha256-JWX+N/mmp9uJLcv4XFbQ3yg34fFf2BLIUpOLrrfTjEM=";
@@ -103,15 +103,17 @@
           (prisma-factory {
             inherit pkgs;
             hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
-            _commit = "6a3747c37ff169c90047725a05a6ef02e32ac97e";
+            versionString = "5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e";
           }).package;
         devShells.default =
           let
-            prisma = prisma-factory {
-              inherit pkgs;
-              hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
-              _commit = "6a3747c37ff169c90047725a05a6ef02e32ac97e";
-            };
+            prisma = (
+              prisma-factory {
+                inherit pkgs;
+                hash = "sha256-R9PG286KQTbzF0r/PPcShUkMiYam2prRh/JICjmhCZA=";
+                versionString = "5.1.1-1.6a3747c37ff169c90047725a05a6ef02e32ac97e";
+              }
+            );
           in
           pkgs.mkShell {
             buildInputs = [
