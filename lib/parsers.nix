@@ -212,7 +212,7 @@ in
   parseVersionString =
     versionString:
     let
-      matches = lib.strings.match ''^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)([0-9a-fA-F]{40})$'' versionString;
+      matches = lib.strings.match ''^([0-9]+)\.([0-9]+)\.([0-9]+)-(.*)([0-9a-fA-F]{40})$'' versionString;
     in
     if matches != null then
       {
