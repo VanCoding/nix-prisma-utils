@@ -8,46 +8,18 @@
   runCommand,
   gzip,
   # variables
-  commit,
   openssl,
   opensslVersion,
   binaryTarget,
   hash,
-  components,
-  isv7,
+  version,
+  callPackage,
 }:
 let
-  componentsToFetch =
-    if components != null then
-      components
-    else
-      [
-        {
-          url = "prisma-fmt.gz";
-          path = "bin/prisma-fmt";
-          env = "PRISMA_FMT_BINARY";
-        }
-        {
-          url = "schema-engine.gz";
-          path = "bin/schema-engine";
-          env = "PRISMA_SCHEMA_ENGINE_BINARY";
-        }
-      ]
-      ++ lib.optionals (!isv7) [
-        {
-          url = "query-engine.gz";
-          path = "bin/query-engine";
-          env = "PRISMA_QUERY_ENGINE_BINARY";
-        }
-        {
-          url = if isDarwin then "libquery_engine.dylib.node.gz" else "libquery_engine.so.node.gz";
-          path = "lib/libquery_engine.node";
-          env = "PRISMA_QUERY_ENGINE_LIBRARY";
-        }
-      ];
+  componentsToFetch = (callPackage ./components.nix { }).fromVersion version;
   isDarwin = lib.strings.hasPrefix "darwin" binaryTarget;
   target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
-  toUrl = url: "https://binaries.prisma.sh/all_commits/${commit}/${target}/${url}";
+  toUrl = url: "https://binaries.prisma.sh/all_commits/${version.commit}/${target}/${url}";
   deps =
     runCommand "prisma-deps-bin"
       {
@@ -66,15 +38,15 @@ let
         mkdir -p $out $out/lib $out/bin
         ${lib.concatLines (
           map (component: ''
-            echo '[nix-prisma-utils] fetching ${toUrl component.url} to $out/${component.path}'
-            curl "${toUrl component.url}" -L | gunzip > $out/${component.path}
+            echo '[nix-prisma-utils] fetching ${toUrl (component.getFileName isDarwin)} to $out/${component.path}'
+            curl "${toUrl (component.getFileName isDarwin)}" -L | gunzip > $out/${component.path}
           '') componentsToFetch
         )}
       '';
   package = stdenv.mkDerivation {
     pname = "prisma-bin";
     src = deps;
-    version = commit;
+    version = version.commit;
     nativeBuildInputs = [
       zlib
       openssl
@@ -101,7 +73,7 @@ let
     package:
     builtins.listToAttrs (
       builtins.map (c: {
-        name = c.env;
+        name = c.variable;
         value = "${package}/${c.path}";
       }) componentsToFetch
     );

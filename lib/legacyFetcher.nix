@@ -1,4 +1,4 @@
-{
+hashes@{
   # dependencies
   lib,
   fetchurl,
@@ -7,10 +7,8 @@
   autoPatchelfHook,
   # variables
   openssl,
-  commit,
   opensslVersion,
   binaryTarget,
-  isv7,
   # = hashes
   prisma-fmt-hash,
   query-engine-hash,
@@ -18,6 +16,8 @@
   introspection-engine-hash,
   migration-engine-hash,
   schema-engine-hash,
+  version,
+  callPackage,
 }:
 let
   hostname = "binaries.prisma.sh";
@@ -25,76 +25,24 @@ let
   isDarwin = lib.strings.hasPrefix "darwin" binaryTarget;
   target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
   baseUrl = "https://${hostname}/${channel}";
-  files =
-    [
-      {
-        name = "prisma-fmt";
-        hash = prisma-fmt-hash;
-        path = "bin/prisma-fmt";
-        variable = "PRISMA_FMT_BINARY";
-      }
-    ]
-    ++ (
-      if schema-engine-hash == null then
-        [ ]
-      else
-        [
-          {
-            name = "schema-engine";
-            hash = schema-engine-hash;
-            path = "bin/schema-engine";
-            variable = "PRISMA_SCHEMA_ENGINE_BINARY";
-          }
-        ]
-    )
-    ++ lib.optionals (!isv7) [
-      {
-        name = "query-engine";
-        hash = query-engine-hash;
-        path = "bin/query-engine";
-        variable = "PRISMA_QUERY_ENGINE_BINARY";
-      }
-      {
-        name = if isDarwin then "libquery_engine.dylib.node" else "libquery_engine.so.node";
-        hash = libquery-engine-hash;
-        path = "lib/libquery_engine.node";
-        variable = "PRISMA_QUERY_ENGINE_LIBRARY";
-      }
-    ]
-    ++ (
-      if introspection-engine-hash == null then
-        [ ]
-      else
-        [
-          {
-            name = "introspection-engine";
-            hash = introspection-engine-hash;
-            path = "bin/introspection-engine";
-            variable = "PRISMA_INTROSPECTION_ENGINE_BINARY";
-          }
-        ]
-    )
-    ++ (
-      if migration-engine-hash == null then
-        [ ]
-      else
-        [
-          {
-            name = "migration-engine";
-            hash = migration-engine-hash;
-            path = "bin/migration-engine";
-            variable = "PRISMA_MIGRATION_ENGINE_BINARY";
-          }
-        ]
-    );
+  files = (callPackage ./components.nix { }).fromHashes {
+    inherit
+      prisma-fmt-hash
+      query-engine-hash
+      libquery-engine-hash
+      introspection-engine-hash
+      migration-engine-hash
+      schema-engine-hash
+      ;
+  };
   downloadedFiles = builtins.map (
     file:
     file
     // {
       file = fetchurl {
-        name = "${baseUrl}/${commit}/${target}/${file.name}.gz";
-        url = "${baseUrl}/${commit}/${target}/${file.name}.gz";
-        hash = file.hash;
+        name = "${baseUrl}/${version.commit}/${target}/${file.getFileName isDarwin}";
+        url = "${baseUrl}/${version.commit}/${target}/${file.getFileName isDarwin}";
+        hash = hashes."${file.name}-hash";
       };
     }
   ) files;
@@ -136,7 +84,7 @@ in
 rec {
   package = stdenv.mkDerivation {
     pname = "prisma-bin";
-    version = commit;
+    version = version.commit;
     nativeBuildInputs = [
       zlib
       openssl

@@ -212,14 +212,15 @@ in
   parseVersionString =
     versionString:
     let
-      matches = lib.strings.match ''^([0-9]+)\.([0-9]+)\.([0-9]+).*([0-9a-fA-F]{40})$'' versionString;
+      matches = lib.strings.match ''^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)([0-9a-fA-F]{40})$'' versionString;
     in
     if matches != null then
       {
         majorVersion = lib.toInt (lib.lists.elemAt matches 0);
         minorVersion = lib.toInt (lib.lists.elemAt matches 1);
         patchVersion = lib.toInt (lib.lists.elemAt matches 2);
-        commit = lib.lists.elemAt matches 3;
+        preReleaseVersion = lib.lists.elemAt matches 3;
+        commit = lib.lists.elemAt matches 4;
       }
     else
       throw "nix-prisma-utils: Version string '${versionString}' does not match the expected format.";

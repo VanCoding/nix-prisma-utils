@@ -8,7 +8,6 @@
   hash ? null,
   versionString ? null,
   version ? null,
-  components ? null, # components to fetch
   npmLock ? null,
   yarnLock ? null,
   pnpmLock ? null,
@@ -47,10 +46,8 @@ let
           opensslVersion
           binaryTarget
           hash
-          components
+          version
           ;
-        commit = version.commit;
-        isv7 = version.majorVersion >= 7;
       }
     else
       pkgs.callPackage ./lib/legacyFetcher.nix {
@@ -64,9 +61,8 @@ let
           introspection-engine-hash
           migration-engine-hash
           schema-engine-hash
+          version
           ;
-        commit = version.commit;
-        isv7 = version.majorVersion >= 7;
       };
   fromNpmLock = file: fromVersionString (parsers.parseNpmLock file);
   fromPnpmLock = file: fromVersionString (parsers.parsePnpmLock file);
