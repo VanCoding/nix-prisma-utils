@@ -6,8 +6,8 @@
   openssl ? pkgs.openssl, # the openssl package to use
   # new fetcher args
   hash ? null,
-  components ? null, # components to fetch
-  _commit ? null, # because package `commit` exists in nixpkgs
+  versionString ? null,
+  version ? null,
   npmLock ? null,
   yarnLock ? null,
   pnpmLock ? null,
@@ -30,49 +30,44 @@ let
   inherit (pkgs) lib;
   parsers = pkgs.callPackage ./lib/parsers.nix { };
   binaryTarget = binaryTargetBySystem.${pkgs.system};
-  fromCommit =
-    _commit:
+  fromVersionString =
+    versionString:
     let
-      # HACK: _commit may be "next-0c19ccc313cf9911a90d99d2ac2eb0280c76c513" instead of "0c19ccc313cf9911a90d99d2ac2eb0280c76c513"
-      commit = lib.strings.removePrefix "next-" _commit;
-      # prisma >= v7 has fewer components
-      isv7 = lib.strings.hasPrefix "next-" _commit;
+      version = parsers.parseVersionString versionString;
     in
-    if builtins.stringLength commit != 40 then
-      throw "invalid commit: got ${commit}"
-    else if hash != null then
+    fromVersion version;
+  fromVersion =
+    version:
+    if hash != null then
       # use new fetcher
       pkgs.callPackage ./lib/fetcher.nix {
         inherit
-          commit
           openssl
           opensslVersion
           binaryTarget
           hash
-          components
-          isv7
+          version
           ;
       }
     else
       pkgs.callPackage ./lib/legacyFetcher.nix {
         inherit
-          commit
           openssl
           opensslVersion
           binaryTarget
-          isv7
           prisma-fmt-hash
           query-engine-hash
           libquery-engine-hash
           introspection-engine-hash
           migration-engine-hash
           schema-engine-hash
+          version
           ;
       };
-  fromNpmLock = file: fromCommit (parsers.parseNpmLock file);
-  fromPnpmLock = file: fromCommit (parsers.parsePnpmLock file);
-  fromYarnLock = file: fromCommit (parsers.parseYarnLock file);
-  fromBunLock = file: fromCommit (parsers.parseBunLock file);
+  fromNpmLock = file: fromVersionString (parsers.parseNpmLock file);
+  fromPnpmLock = file: fromVersionString (parsers.parsePnpmLock file);
+  fromYarnLock = file: fromVersionString (parsers.parseYarnLock file);
+  fromBunLock = file: fromVersionString (parsers.parseBunLock file);
 in
 lib.warnIf (nixpkgs != null)
   ''
@@ -82,8 +77,10 @@ lib.warnIf (nixpkgs != null)
       if your code has `nixpkgs = pkgs;`, replace it with `pkgs = pkgs;` or `inherit pkgs;`.
   ''
   (
-    if _commit != null then
-      fromCommit _commit
+    if version != null then
+      fromVersion version
+    else if versionString != null then
+      fromVersionString versionString
     else if npmLock != null then
       fromNpmLock npmLock
     else if yarnLock != null then
@@ -96,11 +93,17 @@ lib.warnIf (nixpkgs != null)
       {
         # builder pattern
         inherit
-          fromCommit
+          fromVersionString
+          fromVersion
           fromNpmLock
           fromYarnLock
           fromPnpmLock
           fromBunLock
           ;
+
+        fromCommit =
+          commit:
+          builtins.throw "nix-prisma-utils: fromCommit is no longer supported. please set either npmLock, yarnLock, pnpmLock, bunLock or use fromVersion instead.";
+
       }
   )
