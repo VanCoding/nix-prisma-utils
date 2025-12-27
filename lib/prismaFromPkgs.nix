@@ -2,7 +2,8 @@
   lib,
   callPackage,
   fetchFromGitHub,
-  prisma-engines,
+  prisma-engines_6,
+  prisma-engines_7,
   rust-bin,
   makeRustPlatform,
   # variables
@@ -20,7 +21,16 @@ let
   };
   inherit (envFuncs) toExportStyle mkEnv;
 
-  package = prisma-engines.overrideAttrs (
+  pkgsPrismaEngines =
+    if version.majorVersion == 6 then
+      prisma-engines_6
+    else if version.majorVersion == 7 then
+      prisma-engines_7
+    else
+      throw "Version ${version.majorVersion} of prisma-engines is not supported,"
+      + " only 6 and 7 are supported.";
+
+  package = pkgsPrismaEngines.overrideAttrs (
     finalAttrs: oldAttrs:
     let
       rustToolchainPath = finalAttrs.src + "/rust-toolchain.toml";
