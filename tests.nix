@@ -49,8 +49,8 @@ let
       let
         args = {
           usePrismaFromPkgs = true;
-          prismaEnginesGitHubHash = "sha256-z3GdnrLEMJIGPKXXbz2wrbiGpuNlgYxqg3iYINYTnPI=";
-          prismaEnginesCargoHash = "sha256-PgCfBcmK9RCA5BMacJ5oYEpo2DnBKx2xPbdLb79yCCY=";
+          prismaEnginesGitHubHash = "sha256-p198o8ON5mGPCxK+gE0mW+JVyQlNsCsqwa8D4MNBkpA=";
+          prismaEnginesCargoHash = "sha256-bNl04GoxLX+B8dPgqWL/VarreBVebjwNDwQjtQcJnsg=";
         };
       in
       {
