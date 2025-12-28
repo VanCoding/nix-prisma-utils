@@ -89,7 +89,8 @@ rec {
       zlib
       openssl
       stdenv.cc.cc.lib
-    ] ++ lib.optionals (!isDarwin) [ autoPatchelfHook ];
+    ]
+    ++ lib.optionals (!isDarwin) [ autoPatchelfHook ];
     phases = [
       "buildPhase"
       "postFixupHooks"

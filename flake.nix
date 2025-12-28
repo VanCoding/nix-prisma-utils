@@ -4,6 +4,8 @@
     flake-utils.url = "github:numtide/flake-utils";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =
     {
@@ -11,9 +13,17 @@
       nixpkgs,
       flake-utils,
       treefmt-nix,
+      rust-overlay,
     }:
     let
-      prisma-factory = import ./prisma.nix;
+      prisma-factory =
+        { pkgs, ... }@args:
+        (import ./prisma.nix) (
+          args
+          // {
+            rust-bin = rust-overlay.lib.mkRustBin { } pkgs.pkgsBuildBuild;
+          }
+        );
     in
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -51,6 +61,15 @@
           })
           // (pkgs.callPackages ./tests.nix {
             fetcherMode = "legacy";
+            inherit
+              pkgs
+              prisma-factory
+              yarn-v1
+              yarn-berry
+              ;
+          })
+          // (pkgs.callPackages ./tests.nix {
+            fetcherMode = "fromPkgs";
             inherit
               pkgs
               prisma-factory
@@ -117,7 +136,7 @@
           in
           pkgs.mkShell {
             buildInputs = [
-              pkgs.nodejs-18_x
+              pkgs.nodejs_24
               pkgs.pnpm
               pkgs.bun
               pkgs.stdenv.cc.cc.lib
