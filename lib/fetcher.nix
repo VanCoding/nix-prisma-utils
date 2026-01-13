@@ -20,6 +20,10 @@ let
   isDarwin = lib.strings.hasPrefix "darwin" binaryTarget;
   target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
   toUrl = url: "https://binaries.prisma.sh/all_commits/${version.commit}/${target}/${url}";
+  envFuncs = callPackage ./env.nix {
+    inherit componentsToFetch;
+  };
+  inherit (envFuncs) toExportStyle mkEnv;
   deps =
     runCommand "prisma-deps-bin"
       {
@@ -51,7 +55,8 @@ let
       zlib
       openssl
       stdenv.cc.cc.lib
-    ] ++ lib.optionals (!isDarwin) [ autoPatchelfHook ];
+    ]
+    ++ lib.optionals (!isDarwin) [ autoPatchelfHook ];
     phases = [
       "installPhase"
       "postFixupHooks"
@@ -64,19 +69,7 @@ let
       find $out/bin -type f -exec chmod +x {} +
     '';
   };
-  toExportStyle =
-    attrset:
-    "\n"
-    + (lib.concatMapAttrsStringSep "\n" (name: value: "export ${name}=\"${value}\"") attrset)
-    + "\n";
-  mkEnv =
-    package:
-    builtins.listToAttrs (
-      builtins.map (c: {
-        name = c.variable;
-        value = "${package}/${c.path}";
-      }) componentsToFetch
-    );
+
   env = mkEnv package;
 in
 {
