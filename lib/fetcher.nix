@@ -21,7 +21,7 @@ let
   target = if isDarwin then binaryTarget else "${binaryTarget}-openssl-${opensslVersion}";
   toUrl = url: "https://binaries.prisma.sh/all_commits/${version.commit}/${target}/${url}";
   deps =
-    runCommand "prisma-deps-bin"
+    runCommand "prisma-deps-bin-${hash}"
       {
         nativeBuildInputs = [
           curl
