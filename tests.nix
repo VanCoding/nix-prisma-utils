@@ -18,7 +18,7 @@ let
         x86_64-darwin.hash = "sha256-z1VypBp/JN4qipqTFDmVPb/H1I+TdQVcUU4EIsIPQJ8=";
         aarch64-darwin.hash = "sha256-LxpKAAjnRn8eH7h9trOOYKf0WcY+aHGrzzVGW2aViek=";
       }
-    else
+    else if fetcherMode == "legacy" then
       {
         x86_64-linux = {
           prisma-fmt-hash = "sha256-4zsJv0PW8FkGfiiv/9g0y5xWNjmRWD8Q2l2blSSBY3s=";
@@ -44,6 +44,20 @@ let
           libquery-engine-hash = "sha256-4T63O+OyoEIJ0TLKoOoil06whd+41QxiXXg+0cgpX/8=";
           schema-engine-hash = "sha256-+O4IelHbZt4X+6UWol8TpL+BBDTS5JT+0hQR7ELVmZc=";
         };
+      }
+    else
+      let
+        args = {
+          usePrismaFromPkgs = true;
+          prismaEnginesGitHubHash = "sha256-p198o8ON5mGPCxK+gE0mW+JVyQlNsCsqwa8D4MNBkpA=";
+          prismaEnginesCargoHash = "sha256-bNl04GoxLX+B8dPgqWL/VarreBVebjwNDwQjtQcJnsg=";
+        };
+      in
+      {
+        x86_64-linux = args;
+        aarch64-linux = args;
+        x86_64-darwin = args;
+        aarch64-darwin = args;
       };
   test-npm =
     let
@@ -62,14 +76,13 @@ let
         ./node_modules/.bin/prisma generate
       '';
     };
-  test-pnpm =
+  makeTestPnpm =
+    lockfilePath: suffix:
     let
-      prisma =
-        (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromPnpmLock
-          ./pnpm/pnpm-lock.yaml;
+      prisma = (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromPnpmLock lockfilePath;
     in
     writeShellApplication {
-      name = "test-pnpm";
+      name = "test-pnpm${suffix}";
       runtimeInputs = [ pnpm ];
       runtimeEnv = prisma.env;
       text = ''
@@ -79,6 +92,8 @@ let
         ./node_modules/.bin/prisma generate
       '';
     };
+  test-pnpm = makeTestPnpm ./pnpm/pnpm-lock.yaml "";
+  test-pnpm-prisma-6 = makeTestPnpm ./pnpm-prisma-6/pnpm-lock.yaml "-prisma-6";
   test-bun =
     let
       prisma = (pkgs.callPackage prisma-factory hashesBySystem.${pkgs.system}).fromBunLock ./bun/bun.lock;
@@ -129,10 +144,19 @@ let
       '';
     };
 in
-{
-  "test-npm-${fetcherMode}" = test-npm;
-  "test-pnpm-${fetcherMode}" = test-pnpm;
-  "test-bun-${fetcherMode}" = test-bun;
-  "test-yarn-v1-${fetcherMode}" = test-yarn-v1;
-  "test-yarn-berry-${fetcherMode}" = test-yarn-berry;
-}
+if fetcherMode == "fromPkgs" then
+  {
+    # Using the derivation from nixpkgs only works for versions
+    # of prisma such that the derivation correctly builds it.
+    # That is not the case of prisma 5.1.1 used in the other tests,
+    # therefore we test prisma 6 (this is described in the docs).
+    "test-pnpm-prisma-6-${fetcherMode}" = test-pnpm-prisma-6;
+  }
+else
+  {
+    "test-npm-${fetcherMode}" = test-npm;
+    "test-pnpm-${fetcherMode}" = test-pnpm;
+    "test-bun-${fetcherMode}" = test-bun;
+    "test-yarn-v1-${fetcherMode}" = test-yarn-v1;
+    "test-yarn-berry-${fetcherMode}" = test-yarn-berry;
+  }

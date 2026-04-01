@@ -25,11 +25,17 @@
     x86_64-darwin = "darwin";
     aarch64-darwin = "darwin-arm64";
   },
+  # prismaFromPkgs arguments
+  rust-bin,
+  usePrismaFromPkgs ? false,
+  prismaEnginesGitHubHash ? null,
+  prismaEnginesCargoHash ? null,
 }:
 let
   inherit (pkgs) lib;
   parsers = pkgs.callPackage ./lib/parsers.nix { };
-  binaryTarget = binaryTargetBySystem.${pkgs.system};
+  hostSystem = pkgs.stdenv.hostPlatform.system;
+  binaryTarget = binaryTargetBySystem.${hostSystem};
   fromVersionString =
     versionString:
     let
@@ -38,7 +44,26 @@ let
     fromVersion version;
   fromVersion =
     version:
-    if hash != null then
+    if usePrismaFromPkgs then
+      if prismaEnginesGitHubHash == null || prismaEnginesCargoHash == null then
+        throw ''
+          When using `usePrismaFromPkgs = true`, you must provide both
+          `prismaEnginesGitHubHash` and `prismaEnginesCargoHash` arguments.
+          Start by setting them both to empty strings "" one by one,
+          and then run `nix build` to get the expected hash in the error message.
+        ''
+      else
+        pkgs.callPackage ./lib/prismaFromPkgs.nix {
+          inherit
+            rust-bin
+
+            version
+            binaryTarget
+            prismaEnginesGitHubHash
+            prismaEnginesCargoHash
+            ;
+        }
+    else if hash != null then
       # use new fetcher
       pkgs.callPackage ./lib/fetcher.nix {
         inherit
