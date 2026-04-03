@@ -67,13 +67,13 @@ The [Legacy API](./legacy-api.md) (with fromNpmLock, fromYarnLock, etc.) is now 
 Before contributing, please make sure that your code is formatted correctly by running
 
 ```sh
-nix fmt
+treefmt
 ```
 
 All tests (including format check) can be run by
 
 ```sh
-nix flake check
+nix flake check ./dev
 ```
 
 ## License
