@@ -127,6 +127,8 @@ in
       # "@prisma/engines-version@npm:6.3.0-17.acc0b9dd43eb689cbd20c9470515d719db10d0b0":
       yarnBerryLockParsers = {
         "8" = yarnLockParser1;
+        "9" = yarnLockParser1;
+        "10" = yarnLockParser1;
       };
 
       lockfile = builtins.readFile path;
