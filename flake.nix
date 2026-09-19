@@ -28,7 +28,10 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          system = system;
+          overlays = [ self.overlays.default ];
+        };
 
         yarn-v1 = pkgs.writeShellApplication {
           name = "yarn-v1";

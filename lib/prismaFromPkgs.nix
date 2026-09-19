@@ -56,6 +56,7 @@ let
       cargoDeps = rustPlatform.fetchCargoVendor {
         inherit src;
         hash = prismaEnginesCargoHash;
+        patches = finalAttrs.cargoPatches or [];
       };
     }
   );
