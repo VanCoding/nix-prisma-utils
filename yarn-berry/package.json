@@ -1,6 +1,6 @@
 {
   "name": "yarn-berry",
-  "packageManager": "yarn@4.18.0",
+  "packageManager": "yarn@4.6.0",
   "dependencies": {
     "@prisma/client": "5.1.1"
   },

@@ -9,21 +9,10 @@
         runtimeInputs = [ pkgs.yarn ];
         text = "yarn $@";
       };
-      # nixpkgs' yarn-berry is pinned to 4.14.1, which still emits lockfileVersion 9.
-      # override to the latest release so our fixture exercises real lockfileVersion 10.
-      yarn-berry-pkg = pkgs.yarn-berry.overrideAttrs (old: {
-        version = "4.18.0";
-        src = pkgs.fetchFromGitHub {
-          owner = "yarnpkg";
-          repo = "berry";
-          tag = "@yarnpkg/cli/4.18.0";
-          hash = "sha256-pO89wh17cW9/RGKjo70yiefr+9nlJAQs4ZEdUnzdgQM=";
-        };
-      });
       yarn-berry = pkgs.writeShellApplication {
         name = "yarn-berry";
         checkPhase = "";
-        runtimeInputs = [ yarn-berry-pkg ];
+        runtimeInputs = [ pkgs.yarn-berry ];
         text = "yarn $@";
       };
     in
